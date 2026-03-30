@@ -1,0 +1,146 @@
+#include "nd_def.h"
+#include "nd_klibc.h"
+#include "nd_hw.h"
+#include "nd_lock.h"
+#include "nd_thread.h"
+#include "nerd.h"
+
+#include "lib/rbtree.h"
+
+nd_list_t  nd_thread_list;
+
+void nd_thread_list_init(void)
+{
+    nd_list_init(&nd_thread_list);
+}
+
+nd_list_t *nd_thread_list_get(void)
+{
+    return &nd_thread_list;
+}
+
+nd_err_t nd_thread_init(nd_thread_t    *thread,
+                        char           *name,
+                        void           (*entry)(void *parameter),
+                        nd_uint8_t     priority,
+                        void           *parameter,
+                        void           *stack_addr,
+                        nd_uint32_t    stack_size,
+                        nd_uint64_t    time_slice)
+{
+    nd_kernel_def();
+    nd_kernel_lock();
+
+    nd_memcpy(thread->name, name, nd_strlen(name));
+    nd_memcpy(thread->timer.name, name, nd_strlen(name));
+    nd_memcpy(thread->slice_timer.name, name, nd_strlen(name));
+
+    thread->entry = entry;
+    thread->parameter = parameter;
+    thread->priority = priority;
+    thread->init_priority = priority;
+    thread->stack_addr = stack_addr;
+    thread->stack_size = stack_size;
+    thread->timer.arg = thread;
+    thread->timer.type = ND_TIMER_TYPE_ONE_SHOT;
+
+    RB_CLEAR_NODE(&thread->timer.node);
+
+    thread->time_slice = time_slice;
+    thread->slice_left = time_slice;
+    thread->slice_start = 0;
+    thread->slice_timer.arg = thread;
+    thread->slice_timer.type = ND_TIMER_TYPE_ONE_SHOT;
+    thread->slice_timer.callback = nd_thread_slice_timeout;
+
+    RB_CLEAR_NODE(&thread->slice_timer.node);
+
+    thread->yield = 0;
+    thread->stat = ND_THREAD_STAT_INIT;
+
+    nd_list_init(&thread->taken_list);
+
+    nd_memset(thread->stack_addr, 0xAA, thread->stack_size);
+
+    thread->sp = nd_hw_stack_init(thread->entry, thread->parameter,
+                                  thread->stack_addr + thread->stack_size, 0);
+
+    nd_list_insert_before(&nd_thread_list, &thread->tlist);
+    nd_thread_ready_add_tail(thread);
+
+    nd_kernel_unlock();
+
+    return ND_EOK;
+}
+
+nd_err_t nd_thread_suspend(nd_thread_t *thread)
+{
+    nd_kernel_def();
+    nd_kernel_lock();
+
+    /* 如线程持有锁，拒绝挂起，避免优先级反转 */
+    if (!nd_list_is_empty(&thread->taken_list)) {
+        nd_kernel_unlock();
+        return ND_EPERM;
+    }
+
+    switch (thread->stat) {
+    case ND_THREAD_STAT_READY:
+        nd_thread_ready_remove(thread);
+        thread->stat = ND_THREAD_STAT_SUSPEND;
+        break;
+    case ND_THREAD_STAT_RUNNING:
+        thread->stat = ND_THREAD_STAT_SUSPEND;
+        nd_scheduler();
+        break;
+    case ND_THREAD_STAT_BLOCK:
+        thread->stat = ND_THREAD_STAT_SUSPEND;
+        if (nd_list_is_linked(&thread->prio_list)) {
+            nd_list_remove(&thread->prio_list);
+        }
+        nd_timer_stop(&thread->timer);
+        nd_scheduler();
+        break;
+    default:
+        nd_kernel_unlock();
+        return ND_ERROR;
+    }
+
+    nd_kernel_unlock();
+
+    return ND_EOK;
+}
+
+nd_err_t nd_thread_resume(nd_thread_t *thread)
+{
+    nd_kernel_def();
+    nd_kernel_lock();
+
+    if (thread->stat != ND_THREAD_STAT_SUSPEND) {
+        nd_kernel_unlock();
+        return ND_ERROR;
+    }
+
+    thread->stat = ND_THREAD_STAT_READY;
+
+    nd_thread_ready_add_tail(thread);
+
+    nd_scheduler();
+
+    nd_kernel_unlock();
+
+    return ND_EOK;
+}
+
+nd_uint32_t nd_thread_stack_used(nd_thread_t *thread)
+{
+    nd_uint8_t *p = (nd_uint8_t *)thread->stack_addr;
+    nd_uint32_t unused = 0;
+
+    while (unused < thread->stack_size && *p == 0xAA) {
+        p++;
+        unused++;
+    }
+
+    return thread->stack_size - unused;
+}

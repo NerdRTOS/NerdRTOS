@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 750" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="880" height="750" fill="#fafafa" rx="8"/>
+
+  <!-- 标题 -->
+  <text x="440" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">NerdRTOS 调度器架构</text>
+
+  <!-- ========== 触发源层 ========== -->
+  <rect x="40" y="50" width="140" height="46" rx="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1.5"/>
+  <text x="110" y="68" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">IPC操作</text>
+  <text x="110" y="82" text-anchor="middle" font-size="9" fill="#555">sem / queue / event</text>
+
+  <rect x="210" y="50" width="140" height="46" rx="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1.5"/>
+  <text x="280" y="68" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">时间片到期</text>
+  <text x="280" y="82" text-anchor="middle" font-size="9" fill="#555">slice_timer</text>
+
+  <rect x="380" y="50" width="140" height="46" rx="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1.5"/>
+  <text x="450" y="78" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">yield / delay</text>
+
+  <rect x="550" y="50" width="160" height="46" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.5"/>
+  <text x="630" y="68" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">ISR</text>
+  <text x="630" y="82" text-anchor="middle" font-size="9" fill="#555">SysTick / UART 等</text>
+
+  <!-- 箭头: 触发源 → nd_scheduler -->
+  <line x1="110" y1="96" x2="370" y2="140" stroke="#333" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="280" y1="96" x2="380" y2="140" stroke="#333" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="450" y1="96" x2="430" y2="140" stroke="#333" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="630" y1="96" x2="470" y2="140" stroke="#333" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- ========== nd_scheduler 菱形判断 ========== -->
+  <polygon points="420,140 540,175 420,210 300,175" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <text x="420" y="170" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">nd_scheduler()</text>
+  <text x="420" y="183" text-anchor="middle" font-size="9" fill="#555">nest_count &gt; 0 ?</text>
+
+  <!-- Yes → 延迟调度 -->
+  <line x1="540" y1="175" x2="610" y2="175" stroke="#b85450" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="568" y="168" font-size="9" fill="#b85450" font-weight="bold">Yes</text>
+
+  <rect x="620" y="152" width="160" height="46" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.5"/>
+  <text x="700" y="172" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">try_switch = 1</text>
+  <text x="700" y="186" text-anchor="middle" font-size="9" fill="#555">延迟调度</text>
+
+  <!-- No → nd_schedule_core -->
+  <line x1="420" y1="210" x2="420" y2="260" stroke="#82b366" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="435" y="240" font-size="9" fill="#82b366" font-weight="bold">No</text>
+
+  <!-- ========== ISR 退出路径（黄色） ========== -->
+  <line x1="700" y1="198" x2="700" y2="225" stroke="#d6b656" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <rect x="620" y="230" width="160" height="40" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.5"/>
+  <text x="700" y="247" text-anchor="middle" font-size="10" fill="#333">nd_exit_interrupt()</text>
+  <text x="700" y="260" text-anchor="middle" font-size="9" fill="#555">nest_count--</text>
+
+  <line x1="700" y1="270" x2="700" y2="295" stroke="#d6b656" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <polygon points="700,298 795,330 700,362 605,330" fill="#fff2cc" stroke="#d6b656" stroke-width="1.5"/>
+  <text x="700" y="325" text-anchor="middle" font-size="9" font-weight="bold" fill="#333">nd_try_schedule</text>
+  <text x="700" y="338" text-anchor="middle" font-size="8" fill="#555">nest==0 &amp;&amp; try==1?</text>
+
+  <!-- try_schedule Yes → schedule_core -->
+  <line x1="605" y1="330" x2="510" y2="280" stroke="#82b366" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="545" y="296" font-size="9" fill="#82b366" font-weight="bold">Yes</text>
+
+  <!-- ========== nd_schedule_core 区域（绿色） ========== -->
+  <rect x="80" y="265" width="440" height="190" rx="10" fill="#d5e8d4" fill-opacity="0.25" stroke="#82b366" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="95" y="283" font-size="11" font-weight="bold" fill="#4a7a3e">nd_schedule_core()</text>
+
+  <rect x="100" y="295" width="195" height="42" rx="6" fill="#d5e8d4" stroke="#82b366" stroke-width="1.2"/>
+  <text x="197" y="312" text-anchor="middle" font-size="9" font-weight="bold" fill="#333">① 位图查找最高优先级</text>
+  <text x="197" y="325" text-anchor="middle" font-size="8" fill="#555">nd_get_highest_priority_thread()</text>
+
+  <line x1="295" y1="316" x2="315" y2="316" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="320" y="295" width="185" height="42" rx="6" fill="#d5e8d4" stroke="#82b366" stroke-width="1.2"/>
+  <text x="412" y="312" text-anchor="middle" font-size="9" font-weight="bold" fill="#333">② 判定是否切换</text>
+  <text x="412" y="325" text-anchor="middle" font-size="8" fill="#555">抢占 / RR轮转 / 阻塞</text>
+
+  <line x1="412" y1="337" x2="197" y2="360" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="100" y="355" width="195" height="42" rx="6" fill="#d5e8d4" stroke="#82b366" stroke-width="1.2"/>
+  <text x="197" y="372" text-anchor="middle" font-size="9" font-weight="bold" fill="#333">③ current 入队</text>
+  <text x="197" y="385" text-anchor="middle" font-size="8" fill="#555">抢占→队头 / RR→队尾</text>
+
+  <line x1="295" y1="376" x2="315" y2="376" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="320" y="355" width="185" height="42" rx="6" fill="#d5e8d4" stroke="#82b366" stroke-width="1.2"/>
+  <text x="412" y="372" text-anchor="middle" font-size="9" font-weight="bold" fill="#333">④ nd_hw_do_switch()</text>
+  <text x="412" y="385" text-anchor="middle" font-size="8" fill="#555">触发 PendSV</text>
+
+  <!-- schedule_core → PendSV -->
+  <line x1="412" y1="397" x2="412" y2="430" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ========== PendSV 层（紫色） ========== -->
+  <rect x="80" y="475" width="440" height="190" rx="10" fill="#e1d5e7" fill-opacity="0.25" stroke="#9673a6" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="95" y="493" font-size="11" font-weight="bold" fill="#6a4c7d">PendSV Handler (context.S)</text>
+
+  <rect x="100" y="505" width="185" height="42" rx="6" fill="#e1d5e7" stroke="#9673a6" stroke-width="1.2"/>
+  <text x="192" y="522" text-anchor="middle" font-size="9" font-weight="bold" fill="#333">保存 current 上下文</text>
+  <text x="192" y="535" text-anchor="middle" font-size="8" fill="#555">r4-r11 → PSP</text>
+
+  <line x1="285" y1="526" x2="315" y2="526" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="320" y="505" width="185" height="42" rx="6" fill="#e1d5e7" stroke="#9673a6" stroke-width="1.2"/>
+  <text x="412" y="518" text-anchor="middle" font-size="9" font-weight="bold" fill="#333">nd_context_switch_cb()</text>
+  <text x="412" y="531" text-anchor="middle" font-size="8" fill="#555">时间片结算 / 设current</text>
+  <text x="412" y="542" text-anchor="middle" font-size="8" fill="#555">/ 启动timer</text>
+
+  <line x1="412" y1="547" x2="197" y2="570" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="100" y="565" width="185" height="42" rx="6" fill="#e1d5e7" stroke="#9673a6" stroke-width="1.2"/>
+  <text x="192" y="582" text-anchor="middle" font-size="9" font-weight="bold" fill="#333">恢复 next 上下文</text>
+  <text x="192" y="595" text-anchor="middle" font-size="8" fill="#555">r4-r11 ← PSP / EXC_RETURN</text>
+
+  <line x1="285" y1="586" x2="315" y2="586" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="320" y="565" width="185" height="42" rx="6" fill="#e1d5e7" stroke="#9673a6" stroke-width="1.2"/>
+  <text x="412" y="586" text-anchor="middle" font-size="11" font-weight="bold" fill="#6a4c7d">next 线程运行</text>
+
+  <!-- ========== 连接线: schedule_core底部 → PendSV顶部 ========== -->
+  <rect x="150" y="435" width="300" height="30" rx="6" fill="#9673a6" stroke="none"/>
+  <text x="300" y="455" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">PendSV (最低优先级异常)</text>
+
+  <line x1="300" y1="465" x2="300" y2="475" stroke="#9673a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ========== 图例 ========== -->
+  <rect x="620" y="475" width="220" height="135" rx="8" fill="#fff" stroke="#ccc" stroke-width="1"/>
+  <text x="730" y="495" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">图例</text>
+
+  <rect x="635" y="505" width="50" height="18" rx="4" fill="#dae8fc" stroke="#6c8ebf"/>
+  <text x="695" y="518" font-size="9" fill="#333">线程上下文触发</text>
+
+  <rect x="635" y="530" width="50" height="18" rx="4" fill="#fff2cc" stroke="#d6b656"/>
+  <text x="695" y="543" font-size="9" fill="#333">ISR 延迟调度路径</text>
+
+  <rect x="635" y="555" width="50" height="18" rx="4" fill="#d5e8d4" stroke="#82b366"/>
+  <text x="695" y="568" font-size="9" fill="#333">调度核心逻辑</text>
+
+  <rect x="635" y="580" width="50" height="18" rx="4" fill="#e1d5e7" stroke="#9673a6"/>
+  <text x="695" y="593" font-size="9" fill="#333">上下文切换 (ASM)</text>
+</svg>

@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 440" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="820" height="440" fill="#fafafa" rx="8"/>
+
+  <!-- 标题 -->
+  <text x="410" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">优先级反转（Priority Inversion）</text>
+
+  <!-- ===== 左侧线程标签 ===== -->
+  <text x="60" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#c0392b">线程A</text>
+  <text x="60" y="120" text-anchor="middle" font-size="9" fill="#888">高优先级</text>
+
+  <text x="60" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#e67e22">线程B</text>
+  <text x="60" y="220" text-anchor="middle" font-size="9" fill="#888">中优先级</text>
+
+  <text x="60" y="305" text-anchor="middle" font-size="12" font-weight="bold" fill="#2980b9">线程C</text>
+  <text x="60" y="320" text-anchor="middle" font-size="9" fill="#888">低优先级</text>
+
+  <!-- ===== 横向虚线（泳道线） ===== -->
+  <line x1="120" y1="105" x2="770" y2="105" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="120" y1="205" x2="770" y2="205" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="120" y1="305" x2="770" y2="305" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ===== 时间轴 ===== -->
+  <line x1="120" y1="370" x2="780" y2="370" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="790" y="375" font-size="10" fill="#333">时间</text>
+
+  <!-- 时间刻度 -->
+  <line x1="150" y1="367" x2="150" y2="373" stroke="#333" stroke-width="1"/>
+  <text x="150" y="390" text-anchor="middle" font-size="9" fill="#666">t0</text>
+
+  <line x1="270" y1="367" x2="270" y2="373" stroke="#333" stroke-width="1"/>
+  <text x="270" y="390" text-anchor="middle" font-size="9" fill="#666">t1</text>
+
+  <line x1="360" y1="367" x2="360" y2="373" stroke="#333" stroke-width="1"/>
+  <text x="360" y="390" text-anchor="middle" font-size="9" fill="#666">t2</text>
+
+  <line x1="530" y1="367" x2="530" y2="373" stroke="#333" stroke-width="1"/>
+  <text x="530" y="390" text-anchor="middle" font-size="9" fill="#666">t3</text>
+
+  <line x1="640" y1="367" x2="640" y2="373" stroke="#333" stroke-width="1"/>
+  <text x="640" y="390" text-anchor="middle" font-size="9" fill="#666">t4</text>
+
+  <line x1="740" y1="367" x2="740" y2="373" stroke="#333" stroke-width="1"/>
+  <text x="740" y="390" text-anchor="middle" font-size="9" fill="#666">t5</text>
+
+  <!-- ================================================================ -->
+  <!--  t0~t1: C运行（持锁）                                           -->
+  <!-- ================================================================ -->
+  <rect x="150" y="290" width="120" height="30" rx="4" fill="#3498db" stroke="#2471a3" stroke-width="1.2"/>
+  <text x="210" y="309" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">运行（持锁）</text>
+
+  <text x="155" y="283" font-size="8" fill="#2980b9">获取锁</text>
+
+  <!-- ================================================================ -->
+  <!--  t1: A就绪，抢占C，尝试获取锁                                     -->
+  <!-- ================================================================ -->
+  <!-- 竖线：表示A就绪抢占C -->
+  <line x1="270" y1="320" x2="270" y2="120" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="4,2"/>
+  <text x="258" y="140" font-size="8" fill="#c0392b" text-anchor="end">A就绪</text>
+
+  <!-- A运行：尝试获取锁 -->
+  <rect x="270" y="90" width="90" height="30" rx="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1.2"/>
+  <text x="315" y="109" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">尝试获取锁</text>
+
+  <!-- t1~t2: A获取锁失败，被阻塞；C恢复运行 -->
+  <line x1="360" y1="120" x2="360" y2="290" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="4,2"/>
+  <text x="348" y="250" font-size="8" fill="#c0392b" text-anchor="end">A阻塞</text>
+
+  <!-- t1~t2: C恢复运行（锁还在C手上） -->
+  <rect x="270" y="290" width="90" height="30" rx="4" fill="#85c1e9" stroke="#2471a3" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="315" y="309" text-anchor="middle" font-size="9" fill="#2980b9">就绪</text>
+
+  <rect x="360" y="290" width="170" height="30" rx="4" fill="#85c1e9" stroke="#2471a3" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="445" y="309" text-anchor="middle" font-size="9" fill="#2980b9">就绪（被B抢占）</text>
+
+  <!-- A阻塞：从t2一直到t4 -->
+  <rect x="360" y="90" width="280" height="30" rx="4" fill="#fadbd8" stroke="#e74c3c" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="500" y="109" text-anchor="middle" font-size="9" fill="#c0392b">阻塞等待（锁被C持有）</text>
+
+  <!-- ================================================================ -->
+  <!--  t2: B就绪，抢占C                                               -->
+  <!-- ================================================================ -->
+  <line x1="360" y1="320" x2="360" y2="220" stroke="#e67e22" stroke-width="1.2" stroke-dasharray="4,2"/>
+  <text x="348" y="345" font-size="8" fill="#e67e22" text-anchor="end">B就绪</text>
+
+  <!-- B运行 t2~t3 -->
+  <rect x="360" y="190" width="170" height="30" rx="4" fill="#f39c12" stroke="#d68910" stroke-width="1.2"/>
+  <text x="445" y="209" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">运行</text>
+
+  <!-- ================================================================ -->
+  <!--  t3: B完成，C恢复运行                                            -->
+  <!-- ================================================================ -->
+  <line x1="530" y1="220" x2="530" y2="290" stroke="#2980b9" stroke-width="1.2" stroke-dasharray="4,2"/>
+
+  <rect x="530" y="290" width="110" height="30" rx="4" fill="#3498db" stroke="#2471a3" stroke-width="1.2"/>
+  <text x="585" y="309" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">运行（持锁）</text>
+
+  <!-- ================================================================ -->
+  <!--  t4: C释放锁，A恢复运行                                          -->
+  <!-- ================================================================ -->
+  <line x1="640" y1="290" x2="640" y2="120" stroke="#27ae60" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="648" y="180" font-size="8" fill="#27ae60">C释放锁</text>
+
+  <rect x="640" y="290" width="100" height="30" rx="4" fill="#85c1e9" stroke="#2471a3" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="690" y="309" text-anchor="middle" font-size="9" fill="#2980b9">完成</text>
+
+  <!-- A获取锁运行 t4~t5 -->
+  <rect x="640" y="90" width="100" height="30" rx="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1.2"/>
+  <text x="690" y="109" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">获取锁运行</text>
+
+  <!-- ================================================================ -->
+  <!--  反转区间标注                                                     -->
+  <!-- ================================================================ -->
+  <rect x="270" y="48" width="370" height="25" rx="4" fill="#fdedec" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="455" y="65" text-anchor="middle" font-size="10" font-weight="bold" fill="#c0392b">优先级反转区间：高优先级A被中优先级B延迟</text>
+
+  <!-- 反转区间的竖向范围指示线 -->
+  <line x1="270" y1="73" x2="270" y2="85" stroke="#e74c3c" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="640" y1="73" x2="640" y2="85" stroke="#e74c3c" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- ===== 说明文字 ===== -->
+  <text x="410" y="425" text-anchor="middle" font-size="10" fill="#666">线程A（高）被阻塞等待C（低）释放锁，而C又被B（中）抢占，导致A间接等待B</text>
+</svg>
