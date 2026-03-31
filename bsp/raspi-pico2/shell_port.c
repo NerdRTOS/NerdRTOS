@@ -2,8 +2,7 @@
 #include "pico/stdlib.h"
 #include "nerd.h"
 #include "nd_shell.h"
-#include "nd_config.h"
-#include "nd_ipc.h"
+#include "nd_klibc.h"
 
 #define SHELL_UART_HW   uart0_hw
 #define BUF_SIZE        64

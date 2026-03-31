@@ -3,7 +3,9 @@
 
 #include "nd_def.h"
 #include "nd_hw.h"
+#include "nd_bitops.h"
 #include "nd_thread.h"
+#include "nd_ipc.h"
 
 #define ND_THREAD_PRIORITY_MAX      32
 
@@ -23,27 +25,7 @@
 void nd_scheduler_init(void);
 void nd_scheduler_start(void);
 
-void nd_timer_process(void);
-nd_err_t nd_timer_init(nd_timer_t *timer,
-                       const char *name,
-                       nd_timer_type_t type,
-                       nd_uint64_t timeout,
-                       void (*callback)(void *arg),
-                       void *arg);
-nd_err_t nd_timer_start(nd_timer_t *timer);
-nd_err_t nd_timer_stop(nd_timer_t *timer);
-
-nd_err_t nd_thread_init(nd_thread_t    *thread,
-                        char           *name,
-                        void           (*entry)(void *parameter),
-                        nd_uint8_t     priority,
-                        void           *parameter,
-                        void           *stack_addr,
-                        nd_uint32_t    stack_size,
-                        nd_uint64_t    time_slice);
-
 void nd_thread_yield(void);
-
 void nd_thread_delay(nd_uint64_t delay);
 
 void nd_enter_interrupt(void);

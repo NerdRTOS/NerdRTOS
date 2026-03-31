@@ -1,5 +1,3 @@
-#include "nd_def.h"
-#include "nd_hw.h"
 #include "nerd.h"
 
 #define CPU_CLOCK_HZ     150000000UL

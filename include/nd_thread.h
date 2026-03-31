@@ -3,6 +3,7 @@
 
 #include "nd_def.h"
 #include "nd_list.h"
+#include "nd_timer.h"
 
 typedef enum {
     ND_THREAD_STAT_INIT = 0,
