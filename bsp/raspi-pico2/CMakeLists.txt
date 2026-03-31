@@ -30,9 +30,8 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../lib/rbtree.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/src/nd_shell.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/commands/nd_cmd_system.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../samples/rr_test.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../samples/priority_inversion_test.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../samples/queue_test.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/src/ntest.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_sem.c
 )
 
 target_compile_options(nerd PRIVATE
@@ -47,6 +46,7 @@ target_include_directories(nerd PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/../../include/
     ${CMAKE_CURRENT_LIST_DIR}/../../include/lib
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/include
+    ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/include
 )
 
 target_include_directories(nerd SYSTEM PRIVATE
