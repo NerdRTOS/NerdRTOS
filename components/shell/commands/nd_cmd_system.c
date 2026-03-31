@@ -1,5 +1,6 @@
+#include <stdio.h>
 #include "nd_shell.h"
-#include "nd_thread.h"
+#include "nerd.h"
 
 static void cmd_ps(int argc, char *argv[])
 {

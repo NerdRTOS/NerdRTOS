@@ -1,4 +1,5 @@
-#include "nd_ipc.h"
+#include "nerd.h"
+#include "nd_lock.h"
 
 static void nd_ipc_timeout_callback(void *arg)
 {

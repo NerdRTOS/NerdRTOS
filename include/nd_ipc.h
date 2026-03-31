@@ -1,9 +1,9 @@
 #ifndef __ND_IPC_H__
 #define __ND_IPC_H__
 
-#include "nerd.h"
-#include "nd_lock.h"
-#include "nd_klibc.h"
+#include "nd_def.h"
+#include "nd_list.h"
+#include "nd_thread.h"
 
 #define ND_TIMEOUT_FOREVER      ((nd_uint64_t)-1)
 #define ND_TIMEOUT_NOWAIT       ((nd_uint64_t)0)

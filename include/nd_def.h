@@ -2,7 +2,6 @@
 #define __ND_DEF_H__
 
 #include "nd_config.h"
-#include "lib/rbtree.h"
 
 typedef signed   char                   nd_int8_t;
 typedef signed   short                  nd_int16_t;
@@ -63,21 +62,5 @@ typedef unsigned long                   nd_err_t;        // Type for error numbe
 #define ND_ALIGN_DOWN(size, align)      ((size) & ~((align) - 1))
 
 #define ND_NULL                         (0)
-
-typedef enum {
-    ND_TIMER_TYPE_ONE_SHOT = 0,
-    ND_TIMER_TYPE_PERIODIC = 1
-} nd_timer_type_t;
-
-typedef struct nd_timer {
-    char            name[ND_NAME_MAX_SIZE];
-    nd_timer_type_t type;
-    nd_uint64_t     timeout;
-    void            (*callback)(void *arg);
-    void            *arg;
-
-    struct rb_node  node;
-    nd_uint64_t     expire_time;
-} nd_timer_t;
 
 #endif /* __ND_DEF_H__*/

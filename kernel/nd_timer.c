@@ -1,8 +1,6 @@
-#include "nd_def.h"
-#include "nd_klibc.h"
-#include "nd_hw.h"
-#include "nd_lock.h"
 #include "nerd.h"
+#include "nd_lock.h"
+#include "nd_klibc.h"
 
 #define U64_MAX ((nd_uint64_t)(~0ULL))
 
