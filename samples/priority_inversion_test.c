@@ -1,8 +1,7 @@
+#include <stdio.h>
 #include "nerd.h"
 #include "nd_shell.h"
-#include "nd_ipc.h"
-#include "nd_timer.h"
-#include "nd_thread.h"
+#include "nd_klibc.h"
 
 #define TASK_STACK_SIZE    1024
 

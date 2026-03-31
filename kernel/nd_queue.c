@@ -1,4 +1,6 @@
-#include "nd_ipc.h"
+#include "nerd.h"
+#include "nd_lock.h"
+#include "nd_klibc.h"
 
 nd_err_t nd_queue_init(nd_queue_t *queue, char *buf, nd_uint32_t msg_size, nd_uint32_t max_msgs)
 {

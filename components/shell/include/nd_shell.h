@@ -2,9 +2,6 @@
 #define __ND_SHELL_H__
 
 #include "nd_def.h"
-#include <stdio.h>
-#include "nd_hw.h"
-#include "nd_klibc.h"
 
 typedef void (*shell_func_t)(int argc, char *argv[]);
 struct nd_shell_cmd{

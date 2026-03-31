@@ -1,11 +1,6 @@
-#include "nd_def.h"
-#include "nd_klibc.h"
-#include "nd_hw.h"
-#include "nd_lock.h"
-#include "nd_thread.h"
 #include "nerd.h"
-
-#include "lib/rbtree.h"
+#include "nd_lock.h"
+#include "nd_klibc.h"
 
 nd_list_t  nd_thread_list;
 

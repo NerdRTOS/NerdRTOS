@@ -1,11 +1,5 @@
-#include "nd_hw.h"
-#include "nd_def.h"
-#include "nd_list.h"
-#include "nd_thread.h"
-#include "nd_lock.h"
-#include "nd_timer.h"
 #include "nerd.h"
-#include "nd_bitops.h"
+#include "nd_lock.h"
 
 nd_thread_t *nd_current_thread = ND_NULL;
 nd_thread_t *nd_next_thread = ND_NULL;

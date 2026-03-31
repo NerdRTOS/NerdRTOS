@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include "nerd.h"
 #include "nd_shell.h"
+#include "nd_klibc.h"
 
 #define TASK_STACK_SIZE    1024
 #define MON_STACK_SIZE     1024
