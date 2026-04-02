@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "nd_shell.h"
 #include "nerd.h"
 
@@ -19,9 +18,9 @@ static void cmd_ps(int argc, char *argv[])
         [ND_THREAD_STAT_SUSPEND] = "SUSPEND",
     };
 
-    printf("\r\n");
-    printf("%-10s %-8s %5s %7s %7s\r\n", "Name", "State", "Pri", "Stack", "Used");
-    printf("---------- -------- ----- ------- -------\r\n");
+    shell_printf("\r\n");
+    shell_printf("%-10s %-8s %5s %7s %7s\r\n", "Name", "State", "Pri", "Stack", "Used");
+    shell_printf("---------- -------- ----- ------- -------\r\n");
 
     for (node = list_head->next; node != list_head; node = node->next) {
         nd_thread_t *thread = nd_list_entry(node, nd_thread_t, tlist);
@@ -31,7 +30,7 @@ static void cmd_ps(int argc, char *argv[])
         const char *stat_str = (thread->stat < sizeof(state_strs)/sizeof(state_strs[0])) ?
                                 state_strs[thread->stat] : "ERR";
 
-        printf("%-10s %-8s %5d %7d %7d\r\n",
+        shell_printf("%-10s %-8s %5u %7u %7u\r\n",
                thread->name,
                stat_str,
                thread->priority,
