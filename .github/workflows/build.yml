@@ -1,0 +1,57 @@
+name: Build
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache ARM toolchain
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi
+          key: arm-toolchain-13.3
+
+      - name: Install ARM toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        run: |
+          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
+          tar xf arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
+
+      - name: Add toolchain to PATH
+        run: echo "${{ github.workspace }}/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+
+      - name: Cache Pico SDK
+        id: cache-sdk
+        uses: actions/cache@v4
+        with:
+          path: pico-sdk
+          key: pico-sdk-${{ hashFiles('bsp/raspi-pico2/pico_sdk_import.cmake') }}
+
+      - name: Get Pico SDK
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/raspberrypi/pico-sdk.git --depth 1
+          cd pico-sdk && git submodule update --init
+
+      - name: Build
+        env:
+          PICO_SDK_PATH: ${{ github.workspace }}/pico-sdk
+        run: |
+          cd bsp/raspi-pico2
+          mkdir -p build && cd build
+          cmake ..
+          make -j$(nproc) 2>&1 | tee build_log.txt
+
+      - name: Check build warnings
+        run: python3 .github/scripts/check_build.py bsp/raspi-pico2/build/build_log.txt
