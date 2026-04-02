@@ -59,7 +59,7 @@ pico_add_extra_outputs(nerd)
 
 pico_set_linker_script(nerd ${CMAKE_CURRENT_SOURCE_DIR}/nerd.ld)
 
-target_link_options(nerd PRIVATE -O0
+target_link_options(nerd PRIVATE -Os
     -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map
     -Wl,--cref
     -Wl,--print-memory-usage

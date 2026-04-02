@@ -1,0 +1,35 @@
+name: Build
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi cmake
+
+      - name: Get Pico SDK
+        run: |
+          git clone https://github.com/raspberrypi/pico-sdk.git --depth 1
+          cd pico-sdk && git submodule update --init
+
+      - name: Install ARM toolchain
+        run: |
+          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
+          tar xf arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
+          echo "${{ github.workspace }}/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+          sudo apt-get update
+          sudo apt-get install -y cmake
+
