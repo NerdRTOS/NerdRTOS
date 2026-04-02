@@ -21,16 +21,16 @@ void hard_fault_handler_c(uint32_t *stack)
     uint32_t bfar = (*(volatile uint32_t *)0xE000ED38);
 
     printf("\n*** HardFault ***\n");
-    printf("R0  = 0x%08lx\n", r0);
-    printf("R1  = 0x%08lx\n", r1);
-    printf("R2  = 0x%08lx\n", r2);
-    printf("R3  = 0x%08lx\n", r3);
-    printf("R12 = 0x%08lx\n", r12);
-    printf("LR  = 0x%08lx\n", lr);
-    printf("PC  = 0x%08lx\n", pc);
-    printf("PSR = 0x%08lx\n", psr);
-    printf("CFSR= 0x%08lx HFSR=0x%08lx\n", cfsr, hfsr);
-    printf("MMFAR=0x%08lx BFAR=0x%08lx\n", mmfar, bfar);
+    printf("R0  = 0x%08x\n", r0);
+    printf("R1  = 0x%08x\n", r1);
+    printf("R2  = 0x%08x\n", r2);
+    printf("R3  = 0x%08x\n", r3);
+    printf("R12 = 0x%08x\n", r12);
+    printf("LR  = 0x%08x\n", lr);
+    printf("PC  = 0x%08x\n", pc);
+    printf("PSR = 0x%08x\n", psr);
+    printf("CFSR= 0x%08x HFSR=0x%08x\n", cfsr, hfsr);
+    printf("MMFAR=0x%08x BFAR=0x%08x\n", mmfar, bfar);
 
     /* spin here for debugger */
     while (1) {
