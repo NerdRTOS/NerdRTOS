@@ -39,6 +39,19 @@ target_compile_options(nerd PRIVATE
     -Wextra
     -Wunused
     -Wshadow
+    -Werror=return-type
+    -Werror=vla
+    -Werror=uninitialized
+    -Werror=format-security
+    -Wdouble-promotion
+    -Wno-missing-field-initializers
+    -Wno-unused-but-set-variable
+    $<$<COMPILE_LANGUAGE:C>:
+        -Werror=implicit-function-declaration
+        -Werror=implicit-int
+        -Werror=strict-prototypes
+        -Wno-pointer-sign
+    >
 )
 
 target_include_directories(nerd PRIVATE
@@ -59,7 +72,7 @@ pico_add_extra_outputs(nerd)
 
 pico_set_linker_script(nerd ${CMAKE_CURRENT_SOURCE_DIR}/nerd.ld)
 
-target_link_options(nerd PRIVATE -O0
+target_link_options(nerd PRIVATE -Os
     -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map
     -Wl,--cref
     -Wl,--print-memory-usage
