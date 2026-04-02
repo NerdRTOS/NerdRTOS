@@ -11,7 +11,7 @@ static void bsp_init(void)
 #endif
 }
 
-int main()
+int main(void)
 {
     bsp_init();
 
