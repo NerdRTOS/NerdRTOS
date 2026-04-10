@@ -76,7 +76,7 @@ nd_err_t nd_event_recv(nd_event_t *event, nd_uint32_t set, nd_event_opt_t opt, n
         return ND_EBUSY;
     }
 
-    nd_ipc_suspend(&event->wait_list, timeout);
+    nd_thread_pend(&event->wait_list, timeout);
 
     nd_scheduler();
 

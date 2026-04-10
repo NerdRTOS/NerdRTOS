@@ -24,7 +24,6 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_thread.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_sem.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_mutex.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_ipc.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_queue.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_event.c
     ${CMAKE_CURRENT_LIST_DIR}/../../lib/rbtree.c
