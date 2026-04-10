@@ -1,6 +1,8 @@
 #ifndef __ND_CONFIG_H__
 #define __ND_CONFIG_H__
 
+#define ND_CPU_CLOCK_HZ     150000000UL
+
 #define ND_NAME_MAX_SIZE    16
 
 #define ND_TICKLESS_FREQ    1000000
