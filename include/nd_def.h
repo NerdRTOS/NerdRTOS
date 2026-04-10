@@ -61,6 +61,9 @@ typedef unsigned long                   nd_err_t;        // Type for error numbe
 #define ND_ALIGN(size, align)           (((size) + (align) - 1) & ~((align) - 1))
 #define ND_ALIGN_DOWN(size, align)      ((size) & ~((align) - 1))
 
+#define ND_TIMEOUT_FOREVER          ((nd_uint64_t) -1)
+#define ND_TIMEOUT_NOWAIT           ((nd_uint64_t) 0)
+
 #define ND_NULL                         (0)
 
 #endif /* __ND_DEF_H__*/

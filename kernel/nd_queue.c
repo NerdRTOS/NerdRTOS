@@ -37,7 +37,7 @@ nd_err_t nd_queue_send(nd_queue_t *queue, void *c, nd_uint64_t timeout)
             return ND_EFULL;
         }
 
-        nd_ipc_suspend(&queue->send_wait, timeout);
+        nd_thread_pend(&queue->send_wait, timeout);
 
         nd_scheduler();
 
@@ -54,7 +54,7 @@ nd_err_t nd_queue_send(nd_queue_t *queue, void *c, nd_uint64_t timeout)
     queue->used_msg++;
 
     if (!nd_list_is_empty(&queue->read_wait)) {
-        nd_ipc_resume(&queue->read_wait);
+        nd_thread_wakeup(&queue->read_wait);
 
         nd_scheduler();
     }
@@ -75,7 +75,7 @@ nd_err_t nd_queue_recv(nd_queue_t *queue, void *buf, nd_uint64_t timeout)
             return ND_EEMPTY;
         }
 
-        nd_ipc_suspend(&queue->read_wait, timeout);
+        nd_thread_pend(&queue->read_wait, timeout);
 
         nd_scheduler();
 
@@ -92,7 +92,7 @@ nd_err_t nd_queue_recv(nd_queue_t *queue, void *buf, nd_uint64_t timeout)
     queue->used_msg--;
 
     if (!nd_list_is_empty(&queue->send_wait)) {
-        nd_ipc_resume(&queue->send_wait);
+        nd_thread_wakeup(&queue->send_wait);
 
         nd_scheduler();
     }

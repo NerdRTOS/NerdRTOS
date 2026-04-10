@@ -21,7 +21,7 @@ nd_err_t nd_sem_release(nd_sem_t *sem)
     if (nd_list_is_empty(&sem->wait_list)) {
         sem->val++;
     } else {
-        nd_ipc_resume(&sem->wait_list);
+        nd_thread_wakeup(&sem->wait_list);
 
         nd_scheduler();
     }
@@ -47,7 +47,7 @@ nd_err_t nd_sem_take(nd_sem_t *sem, nd_uint64_t timeout)
         return ND_EBUSY;
     }
 
-    nd_ipc_suspend(&sem->wait_list, timeout);
+    nd_thread_pend(&sem->wait_list, timeout);
 
     nd_scheduler();
 

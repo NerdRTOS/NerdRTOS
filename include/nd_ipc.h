@@ -5,9 +5,6 @@
 #include "nd_list.h"
 #include "nd_thread.h"
 
-#define ND_TIMEOUT_FOREVER      ((nd_uint64_t)-1)
-#define ND_TIMEOUT_NOWAIT       ((nd_uint64_t)0)
-
 typedef struct nd_sem {
     nd_int32_t val;
 
@@ -40,9 +37,6 @@ typedef struct nd_event {
 
     nd_list_t   wait_list;
 } nd_event_t;
-
-void nd_ipc_suspend(nd_list_t *wait_list, nd_uint64_t timeout);
-nd_thread_t *nd_ipc_resume(nd_list_t *wait_list);
 
 void nd_sem_init(nd_sem_t *sem, nd_int32_t init_val);
 nd_err_t nd_sem_take(nd_sem_t *sem, nd_uint64_t timeout);

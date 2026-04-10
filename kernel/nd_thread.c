@@ -127,6 +127,17 @@ nd_err_t nd_thread_resume(nd_thread_t *thread)
     return ND_EOK;
 }
 
+static void nd_thread_pend_timeout(void *arg)
+{
+    nd_thread_t *thread = (nd_thread_t *)arg;
+
+    thread->stat = ND_THREAD_STAT_READY;
+    thread->error = ND_ETIMEOUT;
+
+    nd_list_remove(&thread->prio_list);
+    nd_thread_ready_add_tail(thread);
+}
+
 nd_uint32_t nd_thread_stack_used(nd_thread_t *thread)
 {
     nd_uint8_t *p = (nd_uint8_t *)thread->stack_addr;
@@ -138,4 +149,35 @@ nd_uint32_t nd_thread_stack_used(nd_thread_t *thread)
     }
 
     return thread->stack_size - unused;
+}
+
+void nd_thread_pend(nd_list_t *wait_list, nd_uint64_t timeout)
+{
+    nd_list_insert_before(wait_list, &nd_current_thread->prio_list);
+
+    nd_current_thread->error = ND_EOK;
+    nd_current_thread->stat = ND_THREAD_STAT_BLOCK;
+
+    if (timeout != ND_TIMEOUT_FOREVER) {
+        nd_current_thread->timer.timeout = timeout;
+        nd_current_thread->timer.callback = nd_thread_pend_timeout;
+        nd_current_thread->timer.arg = nd_current_thread;
+
+        nd_timer_start(&nd_current_thread->timer);
+    }
+}
+
+nd_thread_t *nd_thread_wakeup(nd_list_t *wait_list)
+{
+    nd_thread_t *thread = nd_list_entry(wait_list->next, nd_thread_t, prio_list);
+
+    nd_timer_stop(&thread->timer);
+
+    thread->error = ND_EOK;
+    thread->stat = ND_THREAD_STAT_READY;
+
+    nd_list_remove(&thread->prio_list);
+    nd_thread_ready_add_tail(thread);
+
+    return thread;
 }
