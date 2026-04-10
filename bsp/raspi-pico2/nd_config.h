@@ -11,4 +11,6 @@
 
 #define ND_IDLE_STACK_SIZE  512
 
+#define ND_DEBUG            1
+
 #endif /* __ND_CONFIG_H__ */
