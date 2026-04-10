@@ -26,11 +26,15 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_mutex.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_queue.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_event.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_mempool.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_memheap.c
     ${CMAKE_CURRENT_LIST_DIR}/../../lib/rbtree.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/src/nd_shell.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/commands/nd_cmd_system.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/src/ntest.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_sem.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_memheap.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_mempool.c
 )
 
 target_compile_options(nerd PRIVATE

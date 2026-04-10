@@ -6,6 +6,7 @@
 #include "nd_bitops.h"
 #include "nd_thread.h"
 #include "nd_ipc.h"
+#include "nd_mem.h"
 
 #define ND_THREAD_PRIORITY_MAX      32
 
