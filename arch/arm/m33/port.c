@@ -1,7 +1,5 @@
 #include "nerd.h"
 
-#define CPU_CLOCK_HZ     150000000UL
-
 #define SYSTICK_BASE     (0xE000E010UL)
 #define SYSTICK_CSR      (*(volatile unsigned long *)(SYSTICK_BASE + 0x00)) /* Control & Status */
 #define SYSTICK_RVR      (*(volatile unsigned long *)(SYSTICK_BASE + 0x04)) /* Reload Value */
@@ -15,7 +13,7 @@ void nd_hw_tick_init(void)
 {
     SYSTICK_CSR = 0;
 
-    SYSTICK_RVR = (CPU_CLOCK_HZ / ND_TICKS_PER_SEC) - 1UL;
+    SYSTICK_RVR = (ND_CPU_CLOCK_HZ / ND_TICKS_PER_SEC) - 1UL;
 
     SYSTICK_CVR = 0;
 
