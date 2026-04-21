@@ -18,6 +18,7 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/context.S
     ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/port.c
     ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/hardfault.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/systick.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_scheduler.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_timer.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_klibc.c
