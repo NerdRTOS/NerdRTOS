@@ -10,15 +10,13 @@ struct nd_list_node
 };
 typedef struct nd_list_node nd_list_t;
 
-
-inline void nd_list_init(nd_list_t *list)
+static inline void nd_list_init(nd_list_t *list)
 {
     list->next = list;
     list->prev = list;
 }
 
-
-inline void nd_list_insert_after(nd_list_t *node, nd_list_t *new_node)
+static inline void nd_list_insert_after(nd_list_t *node, nd_list_t *new_node)
 {
     new_node->next       = node->next;
     new_node->prev       = node;
@@ -26,8 +24,7 @@ inline void nd_list_insert_after(nd_list_t *node, nd_list_t *new_node)
     node->next           = new_node;
 }
 
-
-inline void nd_list_insert_before(nd_list_t *node, nd_list_t *new_node)
+static inline void nd_list_insert_before(nd_list_t *node, nd_list_t *new_node)
 {
     new_node->prev       = node->prev;
     new_node->next       = node;
@@ -35,8 +32,7 @@ inline void nd_list_insert_before(nd_list_t *node, nd_list_t *new_node)
     node->prev           = new_node;
 }
 
-
-inline void nd_list_remove(nd_list_t *node)
+static inline void nd_list_remove(nd_list_t *node)
 {
     node->prev->next     = node->next;
     node->next->prev     = node->prev;
@@ -44,17 +40,17 @@ inline void nd_list_remove(nd_list_t *node)
     node->prev           = ND_NULL;
 }
 
-inline nd_bool_t nd_list_is_empty(const nd_list_t *list)
+static inline nd_bool_t nd_list_is_empty(const nd_list_t *list)
 {
     return (nd_bool_t)(list->next == list);
 }
 
-inline nd_bool_t nd_list_is_linked(const nd_list_t *node)
+static inline nd_bool_t nd_list_is_linked(const nd_list_t *node)
 {
     return node->next != ND_NULL;
 }
 
-inline nd_uint32_t nd_list_length(const nd_list_t *list)
+static inline nd_uint32_t nd_list_length(const nd_list_t *list)
 {
     nd_uint32_t length = 0;
     const nd_list_t *node;

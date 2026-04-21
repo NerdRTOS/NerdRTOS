@@ -73,7 +73,6 @@ nd_err_t nd_thread_suspend(nd_thread_t *thread)
     nd_kernel_def();
     nd_kernel_lock();
 
-    /* 如线程持有锁，拒绝挂起，避免优先级反转 */
     if (!nd_list_is_empty(&thread->taken_list)) {
         nd_kernel_unlock();
         return ND_EPERM;

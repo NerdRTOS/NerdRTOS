@@ -65,7 +65,7 @@ typedef unsigned long                   nd_err_t;        // Type for error numbe
 #define ND_NULL                         (0)
 
 #if ND_DEBUG
-    #define ND_ASSERT(expr)  do { if (!(expr)) { while(1); } } while(0)
+    #define ND_ASSERT(expr)  do { if (!(expr)) { while (1); } } while (0)
 #else
     #define ND_ASSERT(expr)  ((void)0)
 #endif
