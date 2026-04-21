@@ -60,7 +60,6 @@ int nd_vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
         fmt++;
 
-        /* 解析可选的 'l' 修饰符 */
         int is_long = 0;
         if (*fmt == 'l') {
             is_long = 1;

@@ -24,12 +24,11 @@ static void uart_rx_isr(void)
     while (!(SHELL_UART_HW->fr & UART_UARTFR_RXFE_BITS)) {
         char c = (char)(SHELL_UART_HW->dr & 0xFF);
 
-        /* 如果rx_buf满了，丢弃新字符 */
-        if ((nd_uint8_t)(rx_buf.head - rx_buf.tail) >= BUF_SIZE){
+        if ((nd_uint8_t)(rx_buf.head - rx_buf.tail) >= BUF_SIZE) {
             continue;
         }
 
-        rx_buf.buf[rx_buf.head & (BUF_SIZE - 1)] = c;   //采用位与而不用取模
+        rx_buf.buf[rx_buf.head & (BUF_SIZE - 1)] = c;
         rx_buf.head++;
 
         nd_sem_release(&rx_sem);

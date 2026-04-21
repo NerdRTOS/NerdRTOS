@@ -7,7 +7,6 @@
 
 #define ND_MEMHEAP_MAGIC    0x1ea01ea0
 
-
 typedef struct nd_mempool {
     char            *start;
     nd_uint32_t     block_size;
