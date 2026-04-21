@@ -29,7 +29,7 @@ static nd_bool_t shell_input(char c)
     }
 
     if (c == ASCII_BACKSPACE || c == ASCII_DEL) {
-        if (shell_len > 0){
+        if (shell_len > 0) {
             shell_len--;
             shell_putc('\b');
             shell_putc(' ');
@@ -83,14 +83,14 @@ void nd_shell_task_entry(void *para)
 
     shell_puts(SHELL_PROMPT);
 
-    for (;;){
+    for (;;) {
         char c = shell_getc();
 
         if (!shell_input(c)) {
             continue;
         }
 
-        if (shell_len > 0){
+        if (shell_len > 0) {
             nd_uint8_t argc = shell_parse(shell_buf, argv, ARGC_MAX);
 
             if (argc > 0) {
@@ -118,7 +118,7 @@ static void nd_shell_help(int argc, char *argv[])
         if (!cmd->name || !cmd->desc) {
             continue;
         }
-        
+
         shell_puts(" - ");
         shell_puts(cmd->name);
         shell_puts(" - ");

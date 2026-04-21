@@ -37,7 +37,7 @@ static void test_sem_release(void)
 {
     nd_sem_t sem;
 
-    nd_sem_init(&sem, 0);            
+    nd_sem_init(&sem, 0);
 
     nd_sem_release(&sem);
     ntest_assert_equal(sem.val, 1);
@@ -55,12 +55,12 @@ static void test_sem_take_release(void)
     ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);
     ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);
     ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);
-    ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EBUSY); // 第4次应该失败
+    ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EBUSY);
     ntest_assert_equal(sem.val, 0);
 
     nd_sem_release(&sem);
 
-    ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);   // release 后又能 take
+    ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);
 }
 
 static void cmd_test_sem(int argc, char *argv[])
