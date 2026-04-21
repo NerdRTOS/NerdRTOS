@@ -1,6 +1,7 @@
 #ifndef __ND_MEM_H__
 #define __ND_MEM_H__
 
+#include "nd_config.h"
 #include "nd_def.h"
 #include "nd_list.h"
 
