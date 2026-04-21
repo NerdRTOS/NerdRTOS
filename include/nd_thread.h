@@ -1,6 +1,7 @@
 #ifndef __ND_THREAD_H__
 #define __ND_THREAD_H__
 
+#include "nd_config.h"
 #include "nd_def.h"
 #include "nd_list.h"
 #include "nd_timer.h"

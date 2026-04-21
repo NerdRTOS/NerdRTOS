@@ -1,8 +1,6 @@
 #ifndef __ND_DEF_H__
 #define __ND_DEF_H__
 
-#include "nd_config.h"
-
 typedef signed   char                   nd_int8_t;
 typedef signed   short                  nd_int16_t;
 typedef signed   int                    nd_int32_t;

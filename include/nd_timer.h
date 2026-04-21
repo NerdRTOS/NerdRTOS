@@ -1,6 +1,7 @@
 #ifndef __ND_TIMER_H__
 #define __ND_TIMER_H__
 
+#include "nd_config.h"
 #include "nd_def.h"
 #include "lib/rbtree.h"
 

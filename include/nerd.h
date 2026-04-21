@@ -1,6 +1,7 @@
 #ifndef __NERD_H__
 #define __NERD_H__
 
+#include "nd_config.h"
 #include "nd_def.h"
 #include "nd_hw.h"
 #include "nd_bitops.h"
