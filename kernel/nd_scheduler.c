@@ -1,4 +1,5 @@
 #include "nerd.h"
+#include "nd_internal.h"
 #include "nd_lock.h"
 
 nd_thread_t *nd_current_thread = ND_NULL;
@@ -13,10 +14,23 @@ nd_list_t k_thread_ready_list[ND_THREAD_PRIORITY_MAX];
 static nd_thread_t k_idle_thread;
 ALIGN(8) static nd_uint8_t k_idle_stack[ND_IDLE_STACK_SIZE];
 
+nd_uint64_t last_switch_time;
+
 static void nd_idle_entry(void *param)
 {
     (void)param;
     while (1);
+}
+
+nd_uint64_t nd_idle_runtime_get(void)
+{
+    nd_uint64_t idle_runtime = k_idle_thread.usage.total;
+
+    if (nd_current_thread == &k_idle_thread) {
+        idle_runtime += nd_hw_get_current() - last_switch_time;
+    }
+
+    return idle_runtime;
 }
 
 void nd_scheduler_init(void)
@@ -114,16 +128,17 @@ static nd_bool_t nd_should_switch(nd_thread_t *next, nd_bool_t *rr_rotate)
     return ND_FALSE;
 }
 
-static void nd_schedule_core(void)
+static nd_thread_t *nd_schedule_pick_next(void)
 {
     nd_thread_t *next = nd_get_highest_priority_thread();
+
     if (!next) {
-        return;
+        return ND_NULL;
     }
 
     nd_bool_t rr_rotate = ND_FALSE;
     if (!nd_should_switch(next, &rr_rotate)) {
-        return;
+        return ND_NULL;
     }
 
     if (nd_current_thread->stat == ND_THREAD_STAT_RUNNING) {
@@ -143,8 +158,35 @@ static void nd_schedule_core(void)
         }
     }
 
+    return next;
+}
+
+static void nd_schedule_core(void)
+{
+    nd_thread_t *next = nd_schedule_pick_next();
+
+    if (!next) {
+        return;
+    }
+
     nd_next_thread = next;
+
     nd_hw_do_switch();
+}
+
+void nd_schedule_core_irq(void)
+{
+    if (!nd_interrupt_try_switch) {
+        return;
+    }
+
+    nd_interrupt_try_switch = 0;
+
+    nd_thread_t *next = nd_schedule_pick_next();
+
+    if (!next) return;
+
+    nd_context_switch_cb(next);
 }
 
 void nd_context_switch_cb(nd_thread_t *next)
@@ -152,6 +194,12 @@ void nd_context_switch_cb(nd_thread_t *next)
     nd_thread_t *prev = nd_current_thread;
 
     nd_uint64_t now = nd_hw_get_current();
+
+    if (prev) {
+        prev->usage.total += now - last_switch_time;
+    }
+
+    last_switch_time = now;
 
     if (next == ND_NULL)
         return;

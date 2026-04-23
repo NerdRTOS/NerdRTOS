@@ -1,4 +1,5 @@
 #include "nerd.h"
+#include "nd_internal.h"
 #include "nd_lock.h"
 #include "nd_klibc.h"
 
@@ -52,6 +53,8 @@ nd_err_t nd_thread_init(nd_thread_t    *thread,
 
     thread->yield = 0;
     thread->stat = ND_THREAD_STAT_INIT;
+
+    nd_memset(&thread->usage, 0, sizeof(thread->usage));
 
     nd_list_init(&thread->taken_list);
 

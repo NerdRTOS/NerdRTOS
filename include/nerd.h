@@ -30,18 +30,6 @@ void nd_scheduler_start(void);
 void nd_thread_yield(void);
 void nd_thread_delay(nd_uint64_t delay);
 
-void nd_enter_interrupt(void);
-void nd_exit_interrupt(void);
-
-void nd_thread_ready_add_head(nd_thread_t *thread);
-void nd_thread_ready_remove(nd_thread_t *thread);
-
-void nd_thread_slice_timeout(void *arg);
-
 void nd_scheduler(void);
-void nd_try_schedule_irqsave(void);
-void nd_try_schedule(void);
-
-nd_uint64_t nd_hw_get_current(void);
 
 #endif /* __NERD_H__ */

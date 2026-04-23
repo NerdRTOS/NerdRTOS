@@ -1,4 +1,5 @@
 #include "nerd.h"
+#include "nd_internal.h"
 #include "nd_lock.h"
 
 void nd_event_init(nd_event_t *event)

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "nerd.h"
+#include "nd_internal.h"
 #include "nd_shell.h"
 #include "nd_klibc.h"
 

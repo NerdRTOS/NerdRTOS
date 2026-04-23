@@ -1,4 +1,5 @@
 #include "nerd.h"
+#include "nd_internal.h"
 #include "nd_lock.h"
 
 void nd_mempool_init(nd_mempool_t *pool,
