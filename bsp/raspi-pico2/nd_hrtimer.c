@@ -1,5 +1,6 @@
 #include "hardware/timer.h"
 #include "nerd.h"
+#include "nd_internal.h"
 #include <stdio.h>
 
 static int nd_hr_alarm = -1;
@@ -39,4 +40,3 @@ nd_uint64_t nd_hw_hrtimer_get_current(void)
 {
     return time_us_64();
 }
-

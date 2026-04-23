@@ -1,4 +1,5 @@
 #include "nerd.h"
+#include "nd_internal.h"
 #include "nd_lock.h"
 #include "nd_klibc.h"
 
