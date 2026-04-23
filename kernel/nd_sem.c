@@ -1,4 +1,5 @@
 #include "nerd.h"
+#include "nd_internal.h"
 #include "nd_lock.h"
 
 void nd_sem_init(nd_sem_t *sem, nd_int32_t init_val)

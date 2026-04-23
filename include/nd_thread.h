@@ -20,6 +20,12 @@ typedef enum {
     ND_EVENT_OR,
 } nd_event_opt_t;
 
+typedef struct {
+    nd_uint64_t total;
+    nd_uint64_t last_total;
+    nd_uint32_t load;
+} nd_thread_usage_t;
+
 typedef struct nd_thread {
     void          *sp;
     void          *entry;
@@ -47,6 +53,8 @@ typedef struct nd_thread {
     nd_event_opt_t event_opt;
     nd_uint32_t    event_set;
 
+    nd_thread_usage_t usage;
+
     char          name[ND_NAME_MAX_SIZE];
 } nd_thread_t;
 
@@ -61,16 +69,8 @@ nd_err_t nd_thread_init(nd_thread_t    *thread,
                         nd_uint32_t    stack_size,
                         nd_uint64_t    time_slice);
 
-void nd_thread_list_init(void);
-nd_list_t *nd_thread_list_get(void);
-
-void nd_thread_ready_add_tail(nd_thread_t *thread);
-
 nd_err_t nd_thread_suspend(nd_thread_t *thread);
 nd_err_t nd_thread_resume(nd_thread_t *thread);
-
-void nd_thread_pend(nd_list_t *wait_list, nd_uint64_t timeout);
-nd_thread_t *nd_thread_wakeup(nd_list_t *wait_list);
 
 nd_uint32_t nd_thread_stack_used(nd_thread_t *thread);
 

@@ -1,4 +1,5 @@
 #include "nerd.h"
+#include "nd_internal.h"
 
 #define SYSTICK_BASE     (0xE000E010UL)
 #define SYSTICK_CSR      (*(volatile unsigned long *)(SYSTICK_BASE + 0x00)) /* Control & Status */
