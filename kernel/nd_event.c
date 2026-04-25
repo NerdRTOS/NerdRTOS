@@ -26,7 +26,7 @@ static nd_bool_t nd_event_is_satisfied(nd_uint32_t set, nd_uint32_t event_set, n
 
 static void nd_event_wakeup(nd_thread_t *thread)
 {
-    nd_list_remove(&thread->prio_list);
+    nd_list_remove(&thread->qnode);
 
     nd_timer_stop(&thread->timer);
 
@@ -44,7 +44,7 @@ nd_err_t nd_event_send(nd_event_t *event, nd_uint32_t set)
 
     event->set |= set;
 
-    nd_list_for_each_entry_safe(thread, tmp, &event->wait_list, prio_list) {
+    nd_list_for_each_entry_safe(thread, tmp, &event->wait_list, qnode) {
         if (nd_event_is_satisfied(event->set, thread->event_set, thread->event_opt) == ND_TRUE) {
             event->set &= ~thread->event_set;
             nd_event_wakeup(thread);
