@@ -61,7 +61,7 @@ void nd_thread_ready_add_tail(nd_thread_t *thread)
         return;
     }
 
-    nd_list_insert_before(&k_thread_ready_list[prio], &thread->prio_list);
+    nd_list_insert_before(&k_thread_ready_list[prio], &thread->qnode);
 
     k_thread_ready_bit |= (1u << prio);
 }
@@ -74,7 +74,7 @@ void nd_thread_ready_add_head(nd_thread_t *thread)
         return;
     }
 
-    nd_list_insert_after(&k_thread_ready_list[prio], &thread->prio_list);
+    nd_list_insert_after(&k_thread_ready_list[prio], &thread->qnode);
 
     k_thread_ready_bit |= (1u << prio);
 }
@@ -87,7 +87,7 @@ void nd_thread_ready_remove(nd_thread_t *thread)
         return;
     }
 
-    nd_list_remove(&thread->prio_list);
+    nd_list_remove(&thread->qnode);
 
     if (nd_list_is_empty(&k_thread_ready_list[prio])) {
         k_thread_ready_bit &= ~(1u << prio);
@@ -100,7 +100,7 @@ nd_thread_t *nd_get_highest_priority_thread(void)
 
     if (highest_priority == -1)
         return ND_NULL;
-    return nd_list_entry(k_thread_ready_list[highest_priority].next, struct nd_thread, prio_list);
+    return nd_list_entry(k_thread_ready_list[highest_priority].next, struct nd_thread, qnode);
 }
 
 static nd_bool_t nd_should_switch(nd_thread_t *next, nd_bool_t *rr_rotate)
