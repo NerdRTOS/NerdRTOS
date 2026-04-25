@@ -92,8 +92,8 @@ nd_err_t nd_thread_suspend(nd_thread_t *thread)
         break;
     case ND_THREAD_STAT_BLOCK:
         thread->stat = ND_THREAD_STAT_SUSPEND;
-        if (nd_list_is_linked(&thread->prio_list)) {
-            nd_list_remove(&thread->prio_list);
+        if (nd_list_is_linked(&thread->qnode)) {
+            nd_list_remove(&thread->qnode);
         }
         nd_timer_stop(&thread->timer);
         nd_scheduler();
@@ -136,7 +136,7 @@ static void nd_thread_pend_timeout(void *arg)
     thread->stat = ND_THREAD_STAT_READY;
     thread->error = ND_ETIMEOUT;
 
-    nd_list_remove(&thread->prio_list);
+    nd_list_remove(&thread->qnode);
     nd_thread_ready_add_tail(thread);
 }
 
@@ -171,14 +171,14 @@ void nd_thread_pend(nd_list_t *wait_list, nd_uint64_t timeout)
 
 nd_thread_t *nd_thread_wakeup(nd_list_t *wait_list)
 {
-    nd_thread_t *thread = nd_list_entry(wait_list->next, nd_thread_t, prio_list);
+    nd_thread_t *thread = nd_list_entry(wait_list->next, nd_thread_t, qnode);
 
     nd_timer_stop(&thread->timer);
 
     thread->error = ND_EOK;
     thread->stat = ND_THREAD_STAT_READY;
 
-    nd_list_remove(&thread->prio_list);
+    nd_list_remove(&thread->qnode);
     nd_thread_ready_add_tail(thread);
 
     return thread;

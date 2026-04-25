@@ -35,7 +35,7 @@ typedef struct nd_thread {
     nd_uint8_t    priority;
 
     nd_timer_t    timer;
-    nd_list_t     prio_list;
+    nd_list_t     qnode;
     nd_list_t     tlist;
     nd_uint8_t    yield;
 
