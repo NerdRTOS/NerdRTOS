@@ -18,7 +18,7 @@ static void cmd_ps(int argc, char *argv[])
         [ND_THREAD_STAT_READY]   = "READY",
         [ND_THREAD_STAT_RUNNING] = "RUN",
         [ND_THREAD_STAT_BLOCK]   = "BLOCK",
-        [ND_THREAD_STAT_END]     = "END",
+        [ND_THREAD_STAT_DEAD]    = "DEAD",
         [ND_THREAD_STAT_SUSPEND] = "SUSPEND",
     };
 

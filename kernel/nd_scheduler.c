@@ -43,9 +43,9 @@ void nd_scheduler_init(void)
         nd_list_init(&k_thread_ready_list[offset]);
     }
 
-    nd_thread_init(&k_idle_thread, "idle", nd_idle_entry,
-                   ND_THREAD_PRIORITY_MAX - 1, ND_NULL,
-                   k_idle_stack, ND_IDLE_STACK_SIZE, 0);
+    nd_thread_create(&k_idle_thread, "idle", nd_idle_entry,
+                           ND_THREAD_PRIORITY_MAX - 1, ND_NULL,
+                           k_idle_stack, ND_IDLE_STACK_SIZE, 0);
 }
 
 void nd_scheduler_start(void)
@@ -146,9 +146,9 @@ static nd_thread_t *nd_schedule_pick_next(void)
 
         nd_current_thread->stat = ND_THREAD_STAT_READY;
 
-        if (rr_rotate && nd_current_thread->time_slice) {
-            nd_current_thread->slice_left = nd_current_thread->time_slice;
-            nd_current_thread->slice_start = 0;
+        if (rr_rotate && nd_current_thread->slice.time_slice) {
+            nd_current_thread->slice.slice_left = nd_current_thread->slice.time_slice;
+            nd_current_thread->slice.slice_start = 0;
         }
 
         if (preempted_by_higher) {
@@ -206,17 +206,17 @@ void nd_context_switch_cb(nd_thread_t *next)
 
     nd_thread_ready_remove(next);
 
-    if (prev && prev->time_slice) {
-        if (prev->slice_start && prev->slice_left) {
-            nd_uint64_t elapsed = now - prev->slice_start;
-            if (elapsed >= prev->slice_left) {
-                prev->slice_left = 0;
+    if (prev && prev->slice.time_slice) {
+        if (prev->slice.slice_start && prev->slice.slice_left) {
+            nd_uint64_t elapsed = now - prev->slice.slice_start;
+            if (elapsed >= prev->slice.slice_left) {
+                prev->slice.slice_left = 0;
             } else {
-                prev->slice_left -= elapsed;
+                prev->slice.slice_left -= elapsed;
             }
         }
-        nd_timer_stop(&prev->slice_timer);
-        prev->slice_start = 0;
+        nd_timer_stop(&prev->slice.slice_timer);
+        prev->slice.slice_start = 0;
     }
 
     nd_next_thread = ND_NULL;
@@ -224,22 +224,22 @@ void nd_context_switch_cb(nd_thread_t *next)
 
     nd_current_thread->stat = ND_THREAD_STAT_RUNNING;
 
-    if (nd_current_thread->time_slice &&
+    if (nd_current_thread->slice.time_slice &&
         nd_current_thread->priority < ND_THREAD_PRIORITY_MAX &&
         !nd_list_is_empty(&k_thread_ready_list[nd_current_thread->priority])) {
-        if (nd_current_thread->slice_left == 0 ||
-            nd_current_thread->slice_left > nd_current_thread->time_slice) {
-            nd_current_thread->slice_left = nd_current_thread->time_slice;
+        if (nd_current_thread->slice.slice_left == 0 ||
+            nd_current_thread->slice.slice_left > nd_current_thread->slice.time_slice) {
+            nd_current_thread->slice.slice_left = nd_current_thread->slice.time_slice;
         }
-        nd_timer_stop(&nd_current_thread->slice_timer);
-        nd_current_thread->slice_timer.timeout = nd_current_thread->slice_left;
-        nd_current_thread->slice_start = now;
-        nd_timer_start(&nd_current_thread->slice_timer);
-    } else if (nd_current_thread->time_slice) {
-        nd_timer_stop(&nd_current_thread->slice_timer);
+        nd_timer_stop(&nd_current_thread->slice.slice_timer);
+        nd_current_thread->slice.slice_timer.timeout = nd_current_thread->slice.slice_left;
+        nd_current_thread->slice.slice_start = now;
+        nd_timer_start(&nd_current_thread->slice.slice_timer);
+    } else if (nd_current_thread->slice.time_slice) {
+        nd_timer_stop(&nd_current_thread->slice.slice_timer);
 
-        nd_current_thread->slice_left = nd_current_thread->time_slice;
-        nd_current_thread->slice_start = 0;
+        nd_current_thread->slice.slice_left = nd_current_thread->slice.time_slice;
+        nd_current_thread->slice.slice_start = 0;
     }
 }
 
@@ -270,8 +270,8 @@ void nd_thread_slice_timeout(void *arg)
     }
 
     thread->yield = 1;
-    thread->slice_left = 0;
-    thread->slice_start = 0;
+    thread->slice.slice_left = 0;
+    thread->slice.slice_start = 0;
     nd_scheduler();
 }
 
@@ -328,9 +328,9 @@ static void thread_timer_callback(void *arg)
     nd_thread_t *thread = (nd_thread_t *)arg;
 
     thread->stat = ND_THREAD_STAT_READY;
-    if (thread->time_slice) {
-        thread->slice_left = thread->time_slice;
-        thread->slice_start = 0;
+    if (thread->slice.time_slice) {
+        thread->slice.slice_left = thread->slice.time_slice;
+        thread->slice.slice_start = 0;
     }
     nd_thread_ready_add_tail(thread);
 
@@ -342,10 +342,10 @@ void nd_thread_delay(nd_uint64_t delay)
     nd_kernel_def();
     nd_kernel_lock();
 
-    if (nd_current_thread->time_slice) {
-        nd_timer_stop(&nd_current_thread->slice_timer);
-        nd_current_thread->slice_left = nd_current_thread->time_slice;
-        nd_current_thread->slice_start = 0;
+    if (nd_current_thread->slice.time_slice) {
+        nd_timer_stop(&nd_current_thread->slice.slice_timer);
+        nd_current_thread->slice.slice_left = nd_current_thread->slice.time_slice;
+        nd_current_thread->slice.slice_start = 0;
     }
 
     nd_current_thread->stat = ND_THREAD_STAT_BLOCK;
