@@ -56,4 +56,11 @@ void *nd_memheap_alloc(nd_memheap_t *heap, nd_uint32_t size);
 void nd_memheap_free(void *ptr);
 void *nd_memheap_realloc(nd_memheap_t *heap, void *ptr, nd_uint32_t size);
 
+nd_err_t nd_system_heap_init(void *start_addr, nd_uint32_t size);
+
+void *nd_malloc(nd_uint32_t size);
+void  nd_free(void *ptr);
+void *nd_realloc(void *ptr, nd_uint32_t size);
+void *nd_calloc(nd_uint32_t count, nd_uint32_t size);
+
 #endif

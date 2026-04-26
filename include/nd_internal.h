@@ -17,6 +17,7 @@ void nd_thread_ready_remove(nd_thread_t *thread);
 
 void nd_thread_pend(nd_list_t *wait_list, nd_uint64_t timeout);
 nd_thread_t *nd_thread_wakeup(nd_list_t *wait_list);
+void nd_thread_entry(void (*entry)(void *), void *parameter);
 
 void nd_thread_slice_timeout(void *arg);
 

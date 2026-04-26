@@ -1,5 +1,8 @@
 #include "app.h"
 
+extern char __heap_start[];
+extern char __heap_end[];
+
 static void bsp_init(void)
 {
     setup_default_uart();
@@ -9,6 +12,8 @@ static void bsp_init(void)
 #else
     nd_hw_tick_init();
 #endif
+
+    nd_system_heap_init(__heap_start, (nd_uint32_t)(__heap_end - __heap_start));
 }
 
 int main(void)
