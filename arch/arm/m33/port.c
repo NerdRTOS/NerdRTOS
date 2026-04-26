@@ -1,5 +1,6 @@
 #include "nerd.h"
 #include "nd_config.h"
+#include "nd_internal.h"
 
 struct exception_stack_frame
 {
@@ -56,15 +57,15 @@ void *nd_hw_stack_init(void       *entk_fun,
 
     stack_frame = (struct stack_frame *)stk;
 
-    stack_frame->exception_stack_frame.r0  = (unsigned long)parameter; /* r0 : argument */
-    stack_frame->exception_stack_frame.r1  = 0;                        /* r1 */
-    stack_frame->exception_stack_frame.r2  = 0;                        /* r2 */
-    stack_frame->exception_stack_frame.r3  = 0;                        /* r3 */
-    stack_frame->exception_stack_frame.r12 = 0;                        /* r12 */
-    stack_frame->exception_stack_frame.lr  = (unsigned long)exit_fun;  /* lr */
-    stack_frame->exception_stack_frame.pc  = (unsigned long)entk_fun;  /* entry point, pc */
-    stack_frame->exception_stack_frame.psr = 0x01000000L;              /* PSR */
-    stack_frame->exc_return = 0xFFFFFFFD;                              /* exc_return */
+    stack_frame->exception_stack_frame.r0  = (unsigned long)entk_fun;           /* r0 : argument */
+    stack_frame->exception_stack_frame.r1  = (unsigned long)parameter;          /* r1 */
+    stack_frame->exception_stack_frame.r2  = 0;                                 /* r2 */
+    stack_frame->exception_stack_frame.r3  = 0;                                 /* r3 */
+    stack_frame->exception_stack_frame.r12 = 0;                                 /* r12 */
+    stack_frame->exception_stack_frame.lr  = (unsigned long)exit_fun;           /* lr */
+    stack_frame->exception_stack_frame.pc  = (unsigned long)nd_thread_entry;    /* entry point, pc */
+    stack_frame->exception_stack_frame.psr = 0x01000000L;                       /* PSR */
+    stack_frame->exc_return = 0xFFFFFFFD;                                       /* exc_return */
 
     return (void *)stack_frame;
 }

@@ -35,7 +35,7 @@ static void nd_mutex_restore_priority(nd_thread_t *thread)
 
     thread->priority = thread->init_priority;
 
-    nd_list_for_each_entry(mutex, &thread->taken_list, owner_list) {
+    nd_list_for_each_entry(mutex, &thread->mutex.taken_list, owner_list) {
         if (mutex->priority < thread->priority) {
             thread->priority = mutex->priority;
         }
@@ -60,7 +60,7 @@ nd_err_t nd_mutex_unlock(nd_mutex_t *mutex)
         mutex->priority = ND_THREAD_PRIORITY_MAX;
     } else {
         mutex->owner = nd_thread_wakeup(&mutex->wait_list);
-        nd_list_insert_after(&mutex->owner->taken_list, &mutex->owner_list);
+        nd_list_insert_after(&mutex->owner->mutex.taken_list, &mutex->owner_list);
         nd_scheduler();
     }
 
@@ -81,7 +81,7 @@ nd_err_t nd_mutex_lock(nd_mutex_t *mutex, nd_uint64_t timeout)
 
     if (mutex->owner == ND_NULL) {
         mutex->owner = nd_current_thread;
-        nd_list_insert_after(&mutex->owner->taken_list, &mutex->owner_list);
+        nd_list_insert_after(&mutex->owner->mutex.taken_list, &mutex->owner_list);
         nd_kernel_unlock();
         return ND_EOK;
     }
