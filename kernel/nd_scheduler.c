@@ -174,7 +174,7 @@ static void nd_schedule_core(void)
     nd_hw_do_switch();
 }
 
-void nd_schedule_core_irq(void)
+void nd_schedule_irq_exit(void)
 {
     if (!nd_interrupt_try_switch) {
         return;
