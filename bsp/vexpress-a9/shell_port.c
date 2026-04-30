@@ -1,29 +1,40 @@
-#include <stdio.h>
-#include "pico/stdlib.h"
 #include "nerd.h"
-#include "nd_internal.h"
 #include "nd_shell.h"
 #include "nd_klibc.h"
+#include "gic.h"
 
-#define SHELL_UART_HW   uart0_hw
+#define UART0_BASE      0x10009000
+#define UART0_DR        (*(volatile nd_uint32_t *)(UART0_BASE + 0x00))
+#define UART0_FR        (*(volatile nd_uint32_t *)(UART0_BASE + 0x18))
+#define UART0_CR        (*(volatile nd_uint32_t *)(UART0_BASE + 0x30))
+#define UART0_IMSC      (*(volatile nd_uint32_t *)(UART0_BASE + 0x38))
+#define UART0_ICR       (*(volatile nd_uint32_t *)(UART0_BASE + 0x44))
+
+#define UART_FR_TXFF    (1U << 5)
+#define UART_FR_RXFE    (1U << 4)
+#define UART_IMSC_RXIM  (1U << 4)
+#define UART_ICR_RXIC   (1U << 4)
+
+#define IRQ_UART0       37
+
 #define BUF_SIZE        64
 
 typedef struct {
-    char        buf[BUF_SIZE];
-    nd_uint8_t  head;
-    nd_uint8_t  tail;
+    char       buf[BUF_SIZE];
+    nd_uint8_t head;
+    nd_uint8_t tail;
 } ring_buf_t;
 
-static ring_buf_t   rx_buf;
-static nd_sem_t     rx_sem;
-static nd_mutex_t   put_mutex;
+static ring_buf_t rx_buf;
+static nd_sem_t   rx_sem;
+static nd_mutex_t put_mutex;
 
-static void uart_rx_isr(void)
+static void uart_rx_isr(void *arg)
 {
-    nd_enter_interrupt();
+    UART0_ICR = UART_ICR_RXIC;
 
-    while (!(SHELL_UART_HW->fr & UART_UARTFR_RXFE_BITS)) {
-        char c = (char)(SHELL_UART_HW->dr & 0xFF);
+    while (!(UART0_FR & UART_FR_RXFE)) {
+        char c = (char)(UART0_DR & 0xFF);
 
         if ((nd_uint8_t)(rx_buf.head - rx_buf.tail) >= BUF_SIZE) {
             continue;
@@ -34,9 +45,6 @@ static void uart_rx_isr(void)
 
         nd_sem_release(&rx_sem);
     }
-
-    nd_exit_interrupt();
-    nd_try_schedule_irqsave();
 }
 
 void shell_init(void)
@@ -44,20 +52,19 @@ void shell_init(void)
     nd_sem_init(&rx_sem, 0);
     nd_mutex_init(&put_mutex);
 
-    irq_set_exclusive_handler(UART0_IRQ, uart_rx_isr);
-    irq_set_enabled(UART0_IRQ, true);
+    gic_register_handler(IRQ_UART0, uart_rx_isr, ND_NULL);
+    gic_irq_enable(IRQ_UART0);
 
-    SHELL_UART_HW->lcr_h &= ~UART_UARTLCR_H_FEN_BITS;
-    SHELL_UART_HW->imsc |= UART_UARTIMSC_RXIM_BITS;
+    UART0_IMSC |= UART_IMSC_RXIM;
 }
 
 int shell_putc(char c)
 {
-    while ((SHELL_UART_HW->fr & UART_UARTFR_TXFF_BITS)) {
+    while (UART0_FR & UART_FR_TXFF) {
         nd_thread_yield();
     }
 
-    SHELL_UART_HW->dr = c;
+    UART0_DR = c;
 
     return 0;
 }
@@ -90,13 +97,10 @@ void shell_puts(const char *str)
 void shell_printf(const char *fmt, ...)
 {
     char buf[128];
-
     va_list args;
 
     va_start(args, fmt);
-
     nd_vsnprintf(buf, sizeof(buf), fmt, args);
-
     va_end(args);
 
     shell_puts(buf);

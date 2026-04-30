@@ -37,7 +37,11 @@ static void test_sem_release(void)
 {
     nd_sem_t sem;
 
+<<<<<<< HEAD
     nd_sem_init(&sem, 0);            
+=======
+    nd_sem_init(&sem, 0);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 
     nd_sem_release(&sem);
     ntest_assert_equal(sem.val, 1);
@@ -55,12 +59,20 @@ static void test_sem_take_release(void)
     ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);
     ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);
     ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);
+<<<<<<< HEAD
     ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EBUSY); // 第4次应该失败
+=======
+    ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EBUSY);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
     ntest_assert_equal(sem.val, 0);
 
     nd_sem_release(&sem);
 
+<<<<<<< HEAD
     ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);   // release 后又能 take
+=======
+    ntest_assert_equal(nd_sem_take(&sem, ND_TIMEOUT_NOWAIT), ND_EOK);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 }
 
 static void cmd_test_sem(int argc, char *argv[])

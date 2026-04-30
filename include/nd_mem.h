@@ -1,12 +1,16 @@
 #ifndef __ND_MEM_H__
 #define __ND_MEM_H__
 
+#include "nd_config.h"
 #include "nd_def.h"
 #include "nd_list.h"
 
 #define ND_MEMHEAP_MAGIC    0x1ea01ea0
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 typedef struct nd_mempool {
     char            *start;
     nd_uint32_t     block_size;
@@ -55,5 +59,15 @@ nd_err_t nd_memheap_init(nd_memheap_t *heap,
 void *nd_memheap_alloc(nd_memheap_t *heap, nd_uint32_t size);
 void nd_memheap_free(void *ptr);
 void *nd_memheap_realloc(nd_memheap_t *heap, void *ptr, nd_uint32_t size);
+<<<<<<< HEAD
+=======
+
+nd_err_t nd_system_heap_init(void *start_addr, nd_uint32_t size);
+
+void *nd_malloc(nd_uint32_t size);
+void  nd_free(void *ptr);
+void *nd_realloc(void *ptr, nd_uint32_t size);
+void *nd_calloc(nd_uint32_t count, nd_uint32_t size);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 
 #endif

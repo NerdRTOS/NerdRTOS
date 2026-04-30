@@ -17,7 +17,7 @@ typedef struct nd_mutex {
     nd_thread_t *owner;
 
     nd_list_t   wait_list;
-    nd_list_t   owner_list;  /* 链表节点，用于挂到 owner 线程的 taken_list 链表上 */
+    nd_list_t   owner_list;
 } nd_mutex_t;
 
 typedef struct nd_queue {

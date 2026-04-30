@@ -1,4 +1,8 @@
 #include "nerd.h"
+<<<<<<< HEAD
+=======
+#include "nd_internal.h"
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 #include "nd_lock.h"
 
 void nd_event_init(nd_event_t *event)
@@ -25,7 +29,7 @@ static nd_bool_t nd_event_is_satisfied(nd_uint32_t set, nd_uint32_t event_set, n
 
 static void nd_event_wakeup(nd_thread_t *thread)
 {
-    nd_list_remove(&thread->prio_list);
+    nd_list_remove(&thread->qnode);
 
     nd_timer_stop(&thread->timer);
 
@@ -43,9 +47,9 @@ nd_err_t nd_event_send(nd_event_t *event, nd_uint32_t set)
 
     event->set |= set;
 
-    nd_list_for_each_entry_safe(thread, tmp, &event->wait_list, prio_list) {
-        if (nd_event_is_satisfied(event->set, thread->event_set, thread->event_opt) == ND_TRUE) {
-            event->set &= ~thread->event_set;
+    nd_list_for_each_entry_safe(thread, tmp, &event->wait_list, qnode) {
+        if (nd_event_is_satisfied(event->set, thread->event.set, thread->event.opt) == ND_TRUE) {
+            event->set &= ~thread->event.set;
             nd_event_wakeup(thread);
         }
     }
@@ -62,8 +66,8 @@ nd_err_t nd_event_recv(nd_event_t *event, nd_uint32_t set, nd_event_opt_t opt, n
     nd_kernel_def();
     nd_kernel_lock();
 
-    nd_current_thread->event_set = set;
-    nd_current_thread->event_opt = opt;
+    nd_current_thread->event.set = set;
+    nd_current_thread->event.opt = opt;
 
     if (nd_event_is_satisfied(event->set, set, opt) == ND_TRUE) {
         event->set &= ~set;

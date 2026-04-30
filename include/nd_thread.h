@@ -1,69 +1,105 @@
 #ifndef __ND_THREAD_H__
 #define __ND_THREAD_H__
 
+#include "nd_config.h"
 #include "nd_def.h"
 #include "nd_list.h"
 #include "nd_timer.h"
 
-typedef enum {
-    ND_THREAD_STAT_INIT = 0,
-    ND_THREAD_STAT_READY,
-    ND_THREAD_STAT_RUNNING,
-    ND_THREAD_STAT_BLOCK,
-    ND_THREAD_STAT_END,
-    ND_THREAD_STAT_SUSPEND,
-} nd_thread_stat_t;
+#define ND_THREAD_ALLOC_STATIC     0
+#define ND_THREAD_ALLOC_DYNAMIC    1
+
+typedef struct {
+    nd_uint64_t time_slice;
+    nd_uint64_t slice_left;
+    nd_uint64_t slice_start;
+    nd_timer_t  slice_timer;
+} nd_thread_slice_t;
+
+typedef struct {
+    nd_list_t taken_list;
+    struct nd_mutex *pending;
+} nd_thread_mutex_ctx_t;
 
 typedef enum {
     ND_EVENT_AND = 0,
     ND_EVENT_OR,
 } nd_event_opt_t;
 
+typedef struct {
+    nd_uint32_t set;
+    nd_event_opt_t opt;
+} nd_thread_event_ctx_t;
+
+typedef enum {
+    ND_THREAD_STAT_INIT = 0,
+    ND_THREAD_STAT_READY,
+    ND_THREAD_STAT_RUNNING,
+    ND_THREAD_STAT_BLOCK,
+    ND_THREAD_STAT_SUSPEND,
+    ND_THREAD_STAT_DEAD,
+} nd_thread_stat_t;
+
+typedef struct {
+    nd_uint64_t total;
+    nd_uint64_t last_total;
+    nd_uint32_t load;
+} nd_thread_usage_t;
+
 typedef struct nd_thread {
     void          *sp;
     void          *entry;
     void          *parameter;
+
     void          *stack_addr;
-    nd_uint32_t   stack_size;
+    nd_size_t     stack_size;
+
     nd_uint8_t    priority;
-
-    nd_timer_t    timer;
-    nd_list_t     prio_list;
-    nd_list_t     tlist;
-    nd_uint8_t    yield;
-
-    nd_uint64_t   time_slice;
-    nd_uint64_t   slice_left;
-    nd_uint64_t   slice_start;
-    nd_timer_t    slice_timer;
-
     nd_uint8_t    init_priority;
-    nd_list_t     taken_list;
-
-    nd_err_t         error;
+    nd_uint8_t    yield;
+    nd_err_t      error;
     nd_thread_stat_t stat;
 
-    nd_event_opt_t event_opt;
-    nd_uint32_t    event_set;
+    nd_timer_t    timer;
+
+    nd_list_t     qnode;
+    nd_list_t     tlist;
+    nd_list_t     join_list;
+
+    nd_thread_slice_t       slice;
+    nd_thread_mutex_ctx_t   mutex;
+    nd_thread_event_ctx_t   event;
+    nd_thread_usage_t       usage;
 
     char          name[ND_NAME_MAX_SIZE];
 } nd_thread_t;
 
 extern nd_thread_t *nd_current_thread;
 
-nd_err_t nd_thread_init(nd_thread_t    *thread,
-                        char           *name,
-                        void           (*entry)(void *parameter),
-                        nd_uint8_t     priority,
-                        void           *parameter,
-                        void           *stack_addr,
-                        nd_uint32_t    stack_size,
-                        nd_uint64_t    time_slice);
+void *nd_thread_stack_alloc(nd_size_t size);
+nd_err_t nd_thread_stack_free(void *stack);
 
-void nd_thread_list_init(void);
-nd_list_t *nd_thread_list_get(void);
+nd_err_t nd_thread_init(nd_thread_t     *thread,
+                        const char      *name,
+                        void            (*entry)(void *parameter),
+                        nd_uint8_t      priority,
+                        void            *parameter,
+                        void            *stack,
+                        nd_size_t       stack_size,
+                        nd_uint64_t     time_slice);
 
-void nd_thread_ready_add_tail(nd_thread_t *thread);
+nd_err_t nd_thread_create(nd_thread_t *thread,
+                          const char    *name,
+                          void          (*entry)(void *parameter),
+                          nd_uint8_t    priority,
+                          void          *parameter,
+                          void          *stack,
+                          nd_size_t     stack_size,
+                          nd_uint64_t   time_slice);
+
+nd_err_t nd_thread_abort(nd_thread_t *thread);
+nd_err_t nd_thread_join(nd_thread_t *thread, nd_uint64_t timeout);
+nd_err_t nd_thread_detach(nd_thread_t *thread);
 
 nd_err_t nd_thread_suspend(nd_thread_t *thread);
 nd_err_t nd_thread_resume(nd_thread_t *thread);

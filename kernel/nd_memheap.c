@@ -82,13 +82,21 @@ static void memheap_coalesce(nd_memheap_t *heap, nd_memheap_item_t *item)
 
     nd_memheap_item_t *next_item = item_next(item);
 
+<<<<<<< HEAD
     if(ITEM_IS_FREE(next_item)) {
+=======
+    if (ITEM_IS_FREE(next_item)) {
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
         free_list_remove(next_item);
         phys_list_remove(next_item);
         heap->available_size += sizeof(nd_memheap_item_t);
     }
 
+<<<<<<< HEAD
     if(ITEM_IS_FREE(item->prev)) {
+=======
+    if (ITEM_IS_FREE(item->prev)) {
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
         phys_list_remove(item);
         heap->available_size += sizeof(nd_memheap_item_t);
         item = item->prev;
@@ -108,7 +116,11 @@ static void *_memheap_alloc(nd_memheap_t *heap, nd_uint32_t size)
     while (item != &heap->start_item) {
         block_size = item_data_size(item);
 
+<<<<<<< HEAD
         if(block_size >= size)
+=======
+        if (block_size >= size)
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
             break;
 
         item = item->next_free;
@@ -274,7 +286,11 @@ void *nd_memheap_realloc(nd_memheap_t *heap, void *ptr, nd_uint32_t size)
 
     void *new_ptr = _memheap_alloc(heap, size);
 
+<<<<<<< HEAD
     if(new_ptr == ND_NULL) {
+=======
+    if (new_ptr == ND_NULL) {
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
         nd_kernel_unlock();
         return ND_NULL;
     }

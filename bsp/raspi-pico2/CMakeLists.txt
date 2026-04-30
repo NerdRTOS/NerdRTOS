@@ -18,6 +18,7 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/context.S
     ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/port.c
     ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/hardfault.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/systick.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_scheduler.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_timer.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_klibc.c
@@ -28,6 +29,11 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_event.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_mempool.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_memheap.c
+<<<<<<< HEAD
+=======
+    ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_mem.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_cpuload.c
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
     ${CMAKE_CURRENT_LIST_DIR}/../../lib/rbtree.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/src/nd_shell.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/commands/nd_cmd_system.c
@@ -35,6 +41,10 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_sem.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_memheap.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_mempool.c
+<<<<<<< HEAD
+=======
+    ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_thread_lifecycle.c
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 )
 
 target_compile_options(nerd PRIVATE

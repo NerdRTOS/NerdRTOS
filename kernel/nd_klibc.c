@@ -1,6 +1,27 @@
 #include "nd_def.h"
 #include "nd_klibc.h"
 
+static void buf_putc(char *buf, size_t size, nd_uint32_t *written, char c)
+{
+    if (*written < size - 1) {
+        buf[(*written)++] = c;
+    }
+}
+
+static void buf_putn(char *buf, size_t size, nd_uint32_t *written, const char *str, nd_uint32_t len)
+{
+    while (len--) {
+        buf_putc(buf, size, written, *str++);
+    }
+}
+
+static void buf_pad(char *buf, size_t size, nd_uint32_t *written, nd_uint32_t count)
+{
+    while (count--) {
+        buf_putc(buf, size, written, ' ');
+    }
+}
+
 static int is_delim(char c, const char *delimiters) {
     while (*delimiters) {
         if (c == *delimiters) {
@@ -47,8 +68,7 @@ int nd_vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
     nd_uint32_t written = 0;
     nd_uint32_t len = 0;
-
-    char tmp_buf[12];
+    char tmp_buf[24];
 
     if (size == 0) return 0;
 
@@ -60,98 +80,146 @@ int nd_vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
         fmt++;
 
-        /* 解析可选的 'l' 修饰符 */
+        int left_align = 0;
+        nd_uint32_t width = 0;
         int is_long = 0;
+
+        if (*fmt == '-') {
+            left_align = 1;
+            fmt++;
+        }
+
+        while (*fmt >= '0' && *fmt <= '9') {
+            width = width * 10 + (nd_uint32_t)(*fmt - '0');
+            fmt++;
+        }
+
         if (*fmt == 'l') {
             is_long = 1;
             fmt++;
         }
 
+        const char *out = tmp_buf;
+
         switch (*fmt) {
         case 'd': {
             long num;
+            unsigned long value;
+
             if (is_long)
                 num = va_arg(args, long);
             else
                 num = va_arg(args, int);
+
             len = 0;
-            if (num == 0) {
-                buf[written++] = '0';
+
+            if (num < 0) {
+                tmp_buf[len++] = '-';
+                value = (unsigned long)(-num);
+            } else {
+                value = (unsigned long)num;
+            }
+
+            if (value == 0) {
+                tmp_buf[len++] = '0';
                 break;
             }
-            if (num < 0) {
-                buf[written++] = '-';
-                num = -num;
+
+            nd_uint32_t start = len;
+            while (value > 0) {
+                tmp_buf[len++] = value % 10 + '0';
+                value /= 10;
             }
-            while (num > 0) {
-                tmp_buf[len++] = num % 10 + '0';
-                num /= 10;
-            }
-            while (len > 0 && written < size - 1) {
-                buf[written++] = tmp_buf[--len];
+
+            for (nd_uint32_t i = start, j = len - 1; i < j; i++, j--) {
+                char tmp = tmp_buf[i];
+                tmp_buf[i] = tmp_buf[j];
+                tmp_buf[j] = tmp;
             }
             break;
         }
         case 'u': {
             unsigned long num;
+
             if (is_long)
                 num = va_arg(args, unsigned long);
             else
                 num = va_arg(args, unsigned int);
+
             len = 0;
             if (num == 0) {
-                buf[written++] = '0';
+                tmp_buf[len++] = '0';
                 break;
             }
+
             while (num > 0) {
                 tmp_buf[len++] = num % 10 + '0';
                 num /= 10;
             }
-            while (len > 0 && written < size - 1) {
-                buf[written++] = tmp_buf[--len];
+
+            for (nd_uint32_t i = 0, j = len - 1; i < j; i++, j--) {
+                char tmp = tmp_buf[i];
+                tmp_buf[i] = tmp_buf[j];
+                tmp_buf[j] = tmp;
             }
             break;
         }
         case 'x': {
             unsigned long num;
+
             if (is_long)
                 num = va_arg(args, unsigned long);
             else
                 num = va_arg(args, unsigned int);
+
             len = 0;
             if (num == 0) {
-                buf[written++] = '0';
+                tmp_buf[len++] = '0';
                 break;
             }
+
             while (num > 0) {
                 nd_uint8_t digit = num & 0xF;
                 tmp_buf[len++] = digit < 10 ? '0' + digit : 'a' + digit - 10;
                 num >>= 4;
             }
-            while (len > 0 && written < size - 1) {
-                buf[written++] = tmp_buf[--len];
+
+            for (nd_uint32_t i = 0, j = len - 1; i < j; i++, j--) {
+                char tmp = tmp_buf[i];
+                tmp_buf[i] = tmp_buf[j];
+                tmp_buf[j] = tmp;
             }
             break;
         }
         case 's': {
             const char *s = va_arg(args, const char *);
-            if (!s) s = "(null)";
-            while (*s && written < size - 1) {
-                buf[written++] = *s++;
-            }
+            out = s ? s : "(null)";
+            len = nd_strlen(out);
             break;
         }
         case 'c':
-            buf[written++] = (char)va_arg(args, int);
+            tmp_buf[0] = (char)va_arg(args, int);
+            len = 1;
             break;
         case '%':
-            buf[written++] = '%';
+            tmp_buf[0] = '%';
+            len = 1;
             break;
         default:
-            buf[written++] = '%';
-            if (written < size - 1)
-                buf[written++] = *fmt;
+            tmp_buf[0] = '%';
+            tmp_buf[1] = *fmt;
+            len = 2;
             break;
+        }
+
+        if (!left_align && width > len) {
+            buf_pad(buf, size, &written, width - len);
+        }
+
+        buf_putn(buf, size, &written, out, len);
+
+        if (left_align && width > len) {
+            buf_pad(buf, size, &written, width - len);
         }
 
         fmt++;
