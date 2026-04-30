@@ -1,5 +1,8 @@
 #include "nerd.h"
+<<<<<<< HEAD
+=======
 #include "nd_internal.h"
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 #include "nd_lock.h"
 #include "nd_klibc.h"
 
@@ -59,7 +62,11 @@ static void nd_thread_pend_timeout(void *arg)
     thread->stat = ND_THREAD_STAT_READY;
     thread->error = ND_ETIMEOUT;
 
+<<<<<<< HEAD
+    nd_list_remove(&thread->prio_list);
+=======
     nd_list_remove(&thread->qnode);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
     nd_thread_ready_add_tail(thread);
 }
 
@@ -76,6 +83,11 @@ nd_uint32_t nd_thread_stack_used(nd_thread_t *thread)
     return thread->stack_size - unused;
 }
 
+<<<<<<< HEAD
+void nd_thread_pend(nd_list_t *wait_list, nd_uint64_t timeout)
+{
+    nd_list_insert_before(wait_list, &nd_current_thread->prio_list);
+=======
 static void nd_thread_wait_insert(nd_list_t *wait_list, nd_thread_t *thread)
 {
     nd_thread_t *pos;
@@ -93,6 +105,7 @@ static void nd_thread_wait_insert(nd_list_t *wait_list, nd_thread_t *thread)
 void nd_thread_pend(nd_list_t *wait_list, nd_uint64_t timeout)
 {
     nd_thread_wait_insert(wait_list, nd_current_thread);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 
     nd_current_thread->error = ND_EOK;
     nd_current_thread->stat = ND_THREAD_STAT_BLOCK;
@@ -108,18 +121,28 @@ void nd_thread_pend(nd_list_t *wait_list, nd_uint64_t timeout)
 
 nd_thread_t *nd_thread_wakeup(nd_list_t *wait_list)
 {
+<<<<<<< HEAD
+    nd_thread_t *thread = nd_list_entry(wait_list->next, nd_thread_t, prio_list);
+=======
     nd_thread_t *thread = nd_list_entry(wait_list->next, nd_thread_t, qnode);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 
     nd_timer_stop(&thread->timer);
 
     thread->error = ND_EOK;
     thread->stat = ND_THREAD_STAT_READY;
 
+<<<<<<< HEAD
+    nd_list_remove(&thread->prio_list);
+=======
     nd_list_remove(&thread->qnode);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
     nd_thread_ready_add_tail(thread);
 
     return thread;
 }
+<<<<<<< HEAD
+=======
 
 nd_err_t nd_thread_suspend(nd_thread_t *thread)
 {
@@ -376,3 +399,4 @@ nd_err_t nd_thread_detach(nd_thread_t *thread)
 
     return ND_EOK;
 }
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9

@@ -1,6 +1,11 @@
 #ifndef __ND_DEF_H__
 #define __ND_DEF_H__
 
+<<<<<<< HEAD
+#include "nd_config.h"
+
+=======
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 typedef signed   char                   nd_int8_t;
 typedef signed   short                  nd_int16_t;
 typedef signed   int                    nd_int32_t;
@@ -65,7 +70,11 @@ typedef unsigned long                   nd_err_t;        // Type for error numbe
 #define ND_NULL                         (0)
 
 #if ND_DEBUG
+<<<<<<< HEAD
+    #define ND_ASSERT(expr)  do { if (!(expr)) { while(1); } } while(0)
+=======
     #define ND_ASSERT(expr)  do { if (!(expr)) { while (1); } } while (0)
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 #else
     #define ND_ASSERT(expr)  ((void)0)
 #endif

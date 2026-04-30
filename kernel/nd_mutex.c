@@ -1,5 +1,8 @@
 #include "nerd.h"
+<<<<<<< HEAD
+=======
 #include "nd_internal.h"
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 #include "nd_lock.h"
 
 void nd_mutex_init(nd_mutex_t *mutex)
@@ -60,7 +63,11 @@ nd_err_t nd_mutex_unlock(nd_mutex_t *mutex)
         mutex->priority = ND_THREAD_PRIORITY_MAX;
     } else {
         mutex->owner = nd_thread_wakeup(&mutex->wait_list);
+<<<<<<< HEAD
+        nd_list_insert_after(&mutex->owner->taken_list, &mutex->owner_list);
+=======
         nd_list_insert_after(&mutex->owner->mutex.taken_list, &mutex->owner_list);
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
         nd_scheduler();
     }
 

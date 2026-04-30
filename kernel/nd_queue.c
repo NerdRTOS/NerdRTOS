@@ -1,5 +1,8 @@
 #include "nerd.h"
+<<<<<<< HEAD
+=======
 #include "nd_internal.h"
+>>>>>>> 6f17a0a4d2c281b6632fa60cd4cad536ad20e7f9
 #include "nd_lock.h"
 #include "nd_klibc.h"
 

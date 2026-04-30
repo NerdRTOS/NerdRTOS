@@ -104,6 +104,9 @@ nd_err_t nd_thread_detach(nd_thread_t *thread);
 nd_err_t nd_thread_suspend(nd_thread_t *thread);
 nd_err_t nd_thread_resume(nd_thread_t *thread);
 
+void nd_thread_pend(nd_list_t *wait_list, nd_uint64_t timeout);
+nd_thread_t *nd_thread_wakeup(nd_list_t *wait_list);
+
 nd_uint32_t nd_thread_stack_used(nd_thread_t *thread);
 
 #endif /* __ND_THREAD_H__*/
