@@ -32,6 +32,9 @@ static void bsp_init(void)
 
 int main(void)
 {
+    nd_kernel_def();
+    nd_kernel_lock();
+
     bsp_init();
 
     nd_scheduler_init();
