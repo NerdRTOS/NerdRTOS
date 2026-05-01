@@ -34,7 +34,7 @@ static inline nd_memheap_item_t *data_to_item(void *ptr)
 
 static inline void item_init(nd_memheap_item_t *item, nd_memheap_t *heap)
 {
-#if ND_DEBUG
+#if ND_CFG_DEBUG
     item->magic = ND_MEMHEAP_MAGIC;
 #endif
     item->pool  = heap;
@@ -140,7 +140,7 @@ static void *_memheap_alloc(nd_memheap_t *heap, nd_uint32_t size)
 static void _memheap_free(void *ptr)
 {
     nd_memheap_item_t *item = data_to_item(ptr);
-#if ND_DEBUG
+#if ND_CFG_DEBUG
     ND_ASSERT(item->magic == ND_MEMHEAP_MAGIC);
 #endif
     memheap_coalesce(item->pool, item);
@@ -225,7 +225,7 @@ void *nd_memheap_realloc(nd_memheap_t *heap, void *ptr, nd_uint32_t size)
     nd_memheap_item_t *item = data_to_item(ptr);
     nd_uint32_t block_size = item_data_size(item);
 
-#if ND_DEBUG
+#if ND_CFG_DEBUG
     ND_ASSERT(item->magic == ND_MEMHEAP_MAGIC);
 #endif
 

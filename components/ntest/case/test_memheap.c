@@ -23,7 +23,7 @@ static void test_memheap_init(void)
                        TEST_HEAP_SIZE - sizeof(nd_memheap_item_t));
     ntest_assert_true(ITEM_IS_USED(&heap.start_item));
     ntest_assert_true(ITEM_IS_USED(&heap.end_item));
-#if ND_DEBUG
+#if ND_CFG_DEBUG
     ntest_assert_equal(heap.start_item.magic, ND_MEMHEAP_MAGIC);
 #endif
 }

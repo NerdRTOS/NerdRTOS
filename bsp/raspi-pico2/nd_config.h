@@ -9,10 +9,10 @@
 
 #define ND_TICKS_PER_SEC    1000
 
-#define ND_CFG_TICKLESS     1
-
 #define ND_IDLE_STACK_SIZE  512
 
-#define ND_DEBUG            1
+#define ND_CFG_TICKLESS     Y
+
+#define ND_CFG_DEBUG        N
 
 #endif /* __ND_CONFIG_H__ */
