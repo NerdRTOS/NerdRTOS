@@ -1,0 +1,12 @@
+{
+  "id": "vexpress-a9-qemu",
+  "source_dir": "bsp/vexpress-a9-qemu",
+  "build_dir": "build/vexpress-a9-qemu",
+  "cmake_args": "",
+  "needs_pico_sdk": false,
+  "run_qemu": true,
+  "qemu_machine": "vexpress-a9",
+  "qemu_args": "-audio none",
+  "qemu_timeout": "10s",
+  "executable": "nerd"
+}

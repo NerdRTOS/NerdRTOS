@@ -10,8 +10,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  discover-bsp:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.bsp.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Discover BSP targets
+        id: bsp
+        shell: python
+        run: |
+          import json
+          import os
+          import pathlib
+
+          configs = []
+          for path in sorted(pathlib.Path(".github/workflows/bsp").glob("*.json")):
+              config = json.loads(path.read_text())
+              config.setdefault("id", path.stem)
+              configs.append(config)
+
+          if not configs:
+              raise SystemExit("No BSP CI configs found.")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write("matrix=")
+              output.write(json.dumps({"include": configs}, separators=(",", ":")))
+              output.write("\n")
+
+  build:
+    name: ${{ matrix.id }}
+    needs: discover-bsp
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover-bsp.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +66,7 @@ jobs:
         run: echo "${{ github.workspace }}/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
 
       - name: Cache Pico SDK
+        if: matrix.needs_pico_sdk
         id: cache-sdk
         uses: actions/cache@v4
         with:
@@ -39,19 +74,41 @@ jobs:
           key: pico-sdk-${{ hashFiles('bsp/raspi-pico2/pico_sdk_import.cmake') }}
 
       - name: Get Pico SDK
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        if: matrix.needs_pico_sdk && steps.cache-sdk.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/raspberrypi/pico-sdk.git --depth 1
           cd pico-sdk && git submodule update --init
 
-      - name: Build
+      - name: Install QEMU
+        if: matrix.run_qemu
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-arm
+
+      - name: Configure ${{ matrix.id }}
         env:
           PICO_SDK_PATH: ${{ github.workspace }}/pico-sdk
+        run: cmake -S "${{ matrix.source_dir }}" -B "${{ matrix.build_dir }}" ${{ matrix.cmake_args }}
+
+      - name: Build ${{ matrix.id }}
         run: |
-          cd bsp/raspi-pico2
-          mkdir -p build && cd build
-          cmake ..
-          make -j$(nproc) 2>&1 | tee build_log.txt
+          set -o pipefail
+          cmake --build "${{ matrix.build_dir }}" --parallel "$(nproc)" 2>&1 | tee "${{ matrix.build_dir }}/build_log.txt"
 
       - name: Check build warnings
-        run: python3 .github/scripts/check_build.py bsp/raspi-pico2/build/build_log.txt
+        run: python3 .github/scripts/check_build.py "${{ matrix.build_dir }}/build_log.txt"
+
+      - name: Run QEMU smoke test
+        if: matrix.run_qemu
+        run: |
+          set +e
+          timeout "${{ matrix.qemu_timeout }}" qemu-system-arm -M "${{ matrix.qemu_machine }}" -nographic ${{ matrix.qemu_args }} -kernel "${{ matrix.build_dir }}/${{ matrix.executable }}"
+          status=$?
+          set -e
+
+          if [ "$status" -eq 124 ]; then
+            echo "QEMU smoke test reached timeout as expected."
+            exit 0
+          fi
+
+          exit "$status"
