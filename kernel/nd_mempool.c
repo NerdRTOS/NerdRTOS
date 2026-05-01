@@ -66,7 +66,7 @@ void nd_mempool_free(nd_mempool_t *pool, void *ptr)
     nd_kernel_def();
     nd_kernel_lock();
 
-#if ND_DEBUG
+#if ND_CFG_DEBUG
     ND_ASSERT(ptr >= (void *)pool->start);
     ND_ASSERT(ptr < (void *)(pool->start + pool->block_size * pool->block_count));
     ND_ASSERT(((char *)ptr - pool->start) % pool->block_size == 0);

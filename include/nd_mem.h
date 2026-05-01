@@ -18,7 +18,7 @@ typedef struct nd_mempool {
 } nd_mempool_t;
 
 typedef struct nd_memheap_item {
-#if ND_DEBUG
+#if ND_CFG_DEBUG
     nd_uint32_t             magic;
 #endif
     struct nd_memheap       *pool;
