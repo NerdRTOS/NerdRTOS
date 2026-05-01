@@ -1,0 +1,8 @@
+{
+  "id": "raspi-pico2",
+  "source_dir": "bsp/raspi-pico2",
+  "build_dir": "build/raspi-pico2",
+  "cmake_args": "-DPICO_BOARD=pico2",
+  "needs_pico_sdk": true,
+  "run_qemu": false
+}

@@ -51,7 +51,7 @@ target_compile_options(nerd PRIVATE
     -ffreestanding
     -Wall -Wextra
     -Wno-unused-parameter
-    -Wunused-but-set-variable
+    -Wno-unused-but-set-variable
 )
 
 target_include_directories(nerd PRIVATE
