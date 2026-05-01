@@ -6,6 +6,7 @@
 #include "nd_hw.h"
 #include "nd_bitops.h"
 #include "nd_thread.h"
+#include "nd_lock.h"
 #include "nd_ipc.h"
 #include "nd_mem.h"
 
