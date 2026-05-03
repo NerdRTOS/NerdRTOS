@@ -163,18 +163,68 @@ void nd_thread_entry(void (*entry)(void *), void *parameter)
     entry(parameter);
 
     nd_thread_abort(nd_current_thread);
-
-    while (1);
 }
 
-nd_err_t nd_thread_init(nd_thread_t     *thread,
-                        const char      *name,
-                        void            (*entry)(void *parameter),
-                        nd_uint8_t      priority,
-                        void            *parameter,
-                        void            *stack,
-                        nd_size_t       stack_size,
-                        nd_uint64_t     time_slice)
+static inline nd_bool_t nd_is_thread_essential(nd_thread_t *thread)
+{
+    return (thread->options & ND_THREAD_OPT_ESSENTIAL) != 0;
+}
+
+static inline nd_bool_t nd_is_thread_dead(nd_thread_t *thread)
+{
+    return thread->stat == ND_THREAD_STAT_DEAD;
+}
+
+static void nd_thread_halt(nd_thread_t *thread)
+{
+    switch (thread->stat) {
+    case ND_THREAD_STAT_READY:
+        nd_thread_ready_remove(thread);
+        break;
+
+    case ND_THREAD_STAT_BLOCK:
+        if (nd_list_is_linked(&thread->qnode)) {
+            nd_list_remove(&thread->qnode);
+        }
+        break;
+
+    case ND_THREAD_STAT_RUNNING:
+        break;
+
+    case ND_THREAD_STAT_SUSPEND:
+        break;
+
+    case ND_THREAD_STAT_DEAD:
+        return;
+
+    default:
+        break;
+    }
+
+    thread->stat = ND_THREAD_STAT_DEAD;
+
+    nd_timer_stop(&thread->timer);
+    nd_timer_stop(&thread->slice.slice_timer);
+
+    nd_list_remove(&thread->tlist);
+
+    while (!nd_list_is_empty(&thread->join_list)) {
+        nd_thread_wakeup(&thread->join_list);
+    }
+
+    if (thread == nd_current_thread) {
+        nd_scheduler();
+    }
+}
+
+static nd_err_t nd_thread_init(nd_thread_t     *thread,
+                               const char      *name,
+                               void            (*entry)(void *parameter),
+                               nd_uint8_t      priority,
+                               void            *parameter,
+                               void            *stack,
+                               nd_size_t       stack_size,
+                               nd_uint64_t     time_slice)
 {
     nd_strncpy(thread->name, name, ND_NAME_MAX_SIZE - 1);
     thread->name[ND_NAME_MAX_SIZE - 1] = '\0';
@@ -220,18 +270,19 @@ nd_err_t nd_thread_init(nd_thread_t     *thread,
     nd_memset(thread->stack_addr, 0xAA, thread->stack_size);
 
     thread->sp = nd_hw_stack_init(thread->entry, thread->parameter,
-                                  thread->stack_addr + thread->stack_size, 0);
+                                  (nd_uint8_t *)thread->stack_addr + thread->stack_size);
 
     return ND_EOK;
 }
 
-nd_err_t nd_thread_create(nd_thread_t *thread,
+nd_err_t nd_thread_create(nd_thread_t   *thread,
                           const char    *name,
                           void          (*entry)(void *parameter),
                           nd_uint8_t    priority,
                           void          *parameter,
                           void          *stack,
                           nd_size_t     stack_size,
+                          nd_uint32_t   options,
                           nd_uint64_t   time_slice)
 {
     nd_kernel_def();
@@ -249,7 +300,9 @@ nd_err_t nd_thread_create(nd_thread_t *thread,
         return ND_ERROR;
     }
 
+    thread->options = options;
     thread->stat = ND_THREAD_STAT_READY;
+
     nd_list_insert_before(&nd_thread_list, &thread->tlist);
     nd_thread_ready_add_tail(thread);
 
@@ -270,45 +323,18 @@ nd_err_t nd_thread_abort(nd_thread_t *thread)
         return ND_EINVAL;
     }
 
-    switch (thread->stat) {
-    case ND_THREAD_STAT_READY:
-        if (nd_list_is_linked(&thread->qnode)) {
-            nd_thread_ready_remove(thread);
-        }
-        break;
-
-    case ND_THREAD_STAT_BLOCK:
-        if (nd_list_is_linked(&thread->qnode)) {
-            nd_list_remove(&thread->qnode);
-        }
-        break;
-
-    case ND_THREAD_STAT_RUNNING:
-        break;
-
-    case ND_THREAD_STAT_SUSPEND:
-        break;
-
-    default:
-        break;
+    if (nd_is_thread_dead(thread)) {
+        nd_kernel_unlock();
+        return ND_EOK;
     }
 
-    if (nd_list_is_linked(&thread->tlist)) {
-        nd_list_remove(&thread->tlist);
+    if (nd_is_thread_essential(thread)) {
+        nd_kernel_unlock();
+        return ND_EPERM;
     }
 
-    thread->stat = ND_THREAD_STAT_DEAD;
+    nd_thread_halt(thread);
 
-    nd_timer_stop(&thread->timer);
-    nd_timer_stop(&thread->slice.slice_timer);
-
-    while (!nd_list_is_empty(&thread->join_list)) {
-        nd_thread_wakeup(&thread->join_list);
-    }
-
-    if (thread == nd_current_thread) {
-        nd_scheduler();
-    }
     nd_kernel_unlock();
 
     return ND_EOK;
@@ -346,33 +372,4 @@ nd_err_t nd_thread_join(nd_thread_t *thread, nd_uint64_t timeout)
     nd_kernel_unlock();
 
     return nd_current_thread->error;
-}
-
-nd_err_t nd_thread_detach(nd_thread_t *thread)
-{
-    nd_kernel_def();
-    nd_kernel_lock();
-
-    if (!thread) {
-        nd_kernel_unlock();
-        return ND_EINVAL;
-    }
-
-    if (thread->stat != ND_THREAD_STAT_DEAD) {
-        nd_kernel_unlock();
-        return ND_ERROR;
-    }
-
-    if (thread == nd_current_thread) {
-        nd_kernel_unlock();
-        return ND_EPERM;
-    }
-
-    nd_thread_stack_free(thread->stack_addr);
-
-    nd_free(thread);
-
-    nd_kernel_unlock();
-
-    return ND_EOK;
 }

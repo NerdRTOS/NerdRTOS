@@ -6,9 +6,6 @@
 #include "nd_list.h"
 #include "nd_timer.h"
 
-#define ND_THREAD_ALLOC_STATIC     0
-#define ND_THREAD_ALLOC_DYNAMIC    1
-
 typedef struct {
     nd_uint64_t time_slice;
     nd_uint64_t slice_left;
@@ -40,6 +37,11 @@ typedef enum {
     ND_THREAD_STAT_DEAD,
 } nd_thread_stat_t;
 
+typedef enum {
+    ND_THREAD_OPT_NONE      = 0u,
+    ND_THREAD_OPT_ESSENTIAL = (1u << 0),
+} nd_thread_option_t;
+
 typedef struct {
     nd_uint64_t total;
     nd_uint64_t last_total;
@@ -59,6 +61,7 @@ typedef struct nd_thread {
     nd_uint8_t    yield;
     nd_err_t      error;
     nd_thread_stat_t stat;
+    nd_uint32_t   options;
 
     nd_timer_t    timer;
 
@@ -79,27 +82,18 @@ extern nd_thread_t *nd_current_thread;
 void *nd_thread_stack_alloc(nd_size_t size);
 nd_err_t nd_thread_stack_free(void *stack);
 
-nd_err_t nd_thread_init(nd_thread_t     *thread,
-                        const char      *name,
-                        void            (*entry)(void *parameter),
-                        nd_uint8_t      priority,
-                        void            *parameter,
-                        void            *stack,
-                        nd_size_t       stack_size,
-                        nd_uint64_t     time_slice);
-
-nd_err_t nd_thread_create(nd_thread_t *thread,
+nd_err_t nd_thread_create(nd_thread_t   *thread,
                           const char    *name,
                           void          (*entry)(void *parameter),
                           nd_uint8_t    priority,
                           void          *parameter,
                           void          *stack,
                           nd_size_t     stack_size,
+                          nd_uint32_t   options,
                           nd_uint64_t   time_slice);
 
 nd_err_t nd_thread_abort(nd_thread_t *thread);
 nd_err_t nd_thread_join(nd_thread_t *thread, nd_uint64_t timeout);
-nd_err_t nd_thread_detach(nd_thread_t *thread);
 
 nd_err_t nd_thread_suspend(nd_thread_t *thread);
 nd_err_t nd_thread_resume(nd_thread_t *thread);
