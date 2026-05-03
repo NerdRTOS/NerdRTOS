@@ -14,35 +14,48 @@ ALIGN(8) static nd_uint8_t static_stack[TEST_STACK_SIZE];
 ALIGN(8) static nd_thread_t busy_thread;
 ALIGN(8) static nd_uint8_t busy_stack[TEST_STACK_SIZE];
 
-static void return_entry(void *parameter)
+static nd_uint8_t test_thread_priority(void)
+{
+    if (nd_current_thread->priority + 1 < ND_THREAD_PRIORITY_MAX) {
+        return nd_current_thread->priority + 1;
+    }
+
+    return nd_current_thread->priority;
+}
+
+static void busy_entry(void *parameter)
 {
     volatile nd_uint32_t *flag = (volatile nd_uint32_t *)parameter;
 
     (*flag)++;
+
+    while (1) {
+    }
 }
 
-static void test_static_thread_return_join(void)
+static void test_static_thread_abort_join(void)
 {
     static_entry_ran = 0;
 
     ntest_assert_equal(nd_thread_create(&static_thread,
                                         "t_static",
-                                        return_entry,
-                                        nd_current_thread->priority,
+                                        busy_entry,
+                                        test_thread_priority(),
                                         (void *)&static_entry_ran,
                                         static_stack,
                                         sizeof(static_stack),
+                                        ND_THREAD_OPT_NONE,
                                         0),
                        ND_EOK);
 
+    ntest_assert_equal(static_entry_ran, 0);
+    ntest_assert_equal(nd_thread_abort(&static_thread), ND_EOK);
     ntest_assert_equal(nd_thread_join(&static_thread, ND_TIMEOUT_FOREVER),
                        ND_EOK);
-
-    ntest_assert_equal(static_entry_ran, 1);
     ntest_assert_equal(static_thread.stat, ND_THREAD_STAT_DEAD);
 }
 
-static void test_dynamic_thread_return_join_detach(void)
+static void test_dynamic_thread_abort_join_free(void)
 {
     dynamic_entry_ran = 0;
 
@@ -57,21 +70,23 @@ static void test_dynamic_thread_return_join_detach(void)
 
     ntest_assert_equal(nd_thread_create(thread,
                                         "t_dynamic",
-                                        return_entry,
-                                        nd_current_thread->priority,
+                                        busy_entry,
+                                        test_thread_priority(),
                                         (void *)&dynamic_entry_ran,
                                         stack,
                                         TEST_STACK_SIZE,
+                                        ND_THREAD_OPT_NONE,
                                         0),
                        ND_EOK);
 
+    ntest_assert_equal(dynamic_entry_ran, 0);
+    ntest_assert_equal(nd_thread_abort(thread), ND_EOK);
     ntest_assert_equal(nd_thread_join(thread, ND_TIMEOUT_FOREVER),
                        ND_EOK);
-
-    ntest_assert_equal(dynamic_entry_ran, 1);
     ntest_assert_equal(thread->stat, ND_THREAD_STAT_DEAD);
 
-    ntest_assert_equal(nd_thread_detach(thread), ND_EOK);
+    ntest_assert_equal(nd_thread_stack_free(stack), ND_EOK);
+    nd_free(thread);
 }
 
 static void test_join_current_thread(void)
@@ -86,51 +101,28 @@ static void test_join_null_thread(void)
                        ND_EINVAL);
 }
 
-static void test_detach_null_thread(void)
-{
-    ntest_assert_equal(nd_thread_detach(ND_NULL), ND_EINVAL);
-}
-
-static void test_detach_live_thread_should_fail(void)
-{
-    static_entry_ran = 0;
-
-    ntest_assert_equal(nd_thread_init(&busy_thread,
-                                      "t_busy",
-                                      return_entry,
-                                      nd_current_thread->priority,
-                                      (void *)&static_entry_ran,
-                                      busy_stack,
-                                      sizeof(busy_stack),
-                                      0),
-                       ND_EOK);
-
-    busy_thread.stat = ND_THREAD_STAT_READY;
-
-    ntest_assert_equal(nd_thread_detach(&busy_thread), ND_ERROR);
-    ntest_assert_equal(static_entry_ran, 0);
-}
-
 static void test_join_nowait_busy(void)
 {
     static_entry_ran = 0;
 
-    ntest_assert_equal(nd_thread_init(&busy_thread,
-                                      "t_nowait",
-                                      return_entry,
-                                      nd_current_thread->priority,
-                                      (void *)&static_entry_ran,
-                                      busy_stack,
-                                      sizeof(busy_stack),
-                                      0),
+    ntest_assert_equal(nd_thread_create(&busy_thread,
+                                        "t_nowait",
+                                        busy_entry,
+                                        test_thread_priority(),
+                                        (void *)&static_entry_ran,
+                                        busy_stack,
+                                        sizeof(busy_stack),
+                                        ND_THREAD_OPT_NONE,
+                                        0),
                        ND_EOK);
 
-    busy_thread.stat = ND_THREAD_STAT_READY;
-
+    ntest_assert_equal(static_entry_ran, 0);
     ntest_assert_equal(nd_thread_join(&busy_thread, ND_TIMEOUT_NOWAIT),
                        ND_EBUSY);
 
-    ntest_assert_equal(static_entry_ran, 0);
+    ntest_assert_equal(nd_thread_abort(&busy_thread), ND_EOK);
+    ntest_assert_equal(nd_thread_join(&busy_thread, ND_TIMEOUT_FOREVER),
+                       ND_EOK);
 }
 
 static void cmd_test_thread_lifecycle(int argc, char *argv[])
@@ -140,12 +132,10 @@ static void cmd_test_thread_lifecycle(int argc, char *argv[])
 
     NTEST_SUITE_BEGIN("thread_lifecycle");
 
-    NTEST_RUN(test_static_thread_return_join);
-    NTEST_RUN(test_dynamic_thread_return_join_detach);
+    NTEST_RUN(test_static_thread_abort_join);
+    NTEST_RUN(test_dynamic_thread_abort_join_free);
     NTEST_RUN(test_join_current_thread);
     NTEST_RUN(test_join_null_thread);
-    NTEST_RUN(test_detach_null_thread);
-    NTEST_RUN(test_detach_live_thread_should_fail);
     NTEST_RUN(test_join_nowait_busy);
 
     NTEST_SUITE_END();
