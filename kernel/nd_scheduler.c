@@ -45,7 +45,7 @@ void nd_scheduler_init(void)
 
     nd_thread_create(&k_idle_thread, "idle", nd_idle_entry,
                            ND_THREAD_PRIORITY_MAX - 1, ND_NULL,
-                           k_idle_stack, ND_IDLE_STACK_SIZE, 0);
+                           k_idle_stack, ND_IDLE_STACK_SIZE, ND_THREAD_OPT_ESSENTIAL, 0);
 }
 
 void nd_scheduler_start(void)

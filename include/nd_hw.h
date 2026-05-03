@@ -20,6 +20,8 @@ nd_uint64_t nd_hw_tick_get_current(void);
 void nd_hw_do_switch_first(void);
 void nd_hw_do_switch(void);
 
-void *nd_hw_stack_init(void *entk_fun, void *parameter, nd_uint8_t *stack_addr, void *exit_fun);
+void *nd_hw_stack_init(void       *entk_fun,
+                       void       *parameter,
+                       nd_uint8_t *stack_addr);
 
 #endif /* __ND_HW_H__ */

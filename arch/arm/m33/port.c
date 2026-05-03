@@ -39,14 +39,12 @@ struct stack_frame
  * @param entk_fun the entry of thread
  * @param parameter the parameter of entry
  * @param stack_addr the beginning stack address
- * @param exit_fun the function will be called when thread exit
  *
  * @return stack address
  */
 void *nd_hw_stack_init(void       *entk_fun,
                        void       *parameter,
-                       nd_uint8_t *stack_addr,
-                       void       *exit_fun)
+                       nd_uint8_t *stack_addr)
 {
     struct stack_frame *stack_frame;
     nd_uint8_t         *stk;
@@ -62,7 +60,7 @@ void *nd_hw_stack_init(void       *entk_fun,
     stack_frame->exception_stack_frame.r2  = 0;                                 /* r2 */
     stack_frame->exception_stack_frame.r3  = 0;                                 /* r3 */
     stack_frame->exception_stack_frame.r12 = 0;                                 /* r12 */
-    stack_frame->exception_stack_frame.lr  = (unsigned long)exit_fun;           /* lr */
+    stack_frame->exception_stack_frame.lr  = 0;                                 /* lr */
     stack_frame->exception_stack_frame.pc  = (unsigned long)nd_thread_entry;    /* entry point, pc */
     stack_frame->exception_stack_frame.psr = 0x01000000L;                       /* PSR */
     stack_frame->exc_return = 0xFFFFFFFD;                                       /* exc_return */

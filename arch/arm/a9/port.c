@@ -16,8 +16,7 @@ struct preempt_frame {
 
 void *nd_hw_stack_init(void       *entk_fun,
                        void       *parameter,
-                       nd_uint8_t *stack_addr,
-                       void       *exit_fun)
+                       nd_uint8_t *stack_addr)
 {
     struct preempt_frame *preempt_frame;
     nd_uint8_t           *stk;
@@ -36,7 +35,7 @@ void *nd_hw_stack_init(void       *entk_fun,
     preempt_frame->pc   = (unsigned long)nd_thread_entry;
     preempt_frame->r0   = (nd_uint32_t)entk_fun;
     preempt_frame->r1   = (nd_uint32_t)parameter;
-    preempt_frame->lr   = (nd_uint32_t)exit_fun;
+    preempt_frame->lr   = 0;
 
     return (void *)preempt_frame;
 }
