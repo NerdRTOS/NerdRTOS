@@ -4,8 +4,8 @@
 .global nd_current_thread
 .global nd_next_thread
 
-.equ    FRAME_TYPE_COOP,    1
-.equ    FRAME_TYPE_PREEMPT, 2
+.equ    FRAME_TYPE_VOLUNTARY,    1
+.equ    FRAME_TYPE_PREEMPT,      2
 
 .equ    IRQ_MODE,           0x12
 .equ    SYS_MODE,           0x1F
@@ -14,6 +14,12 @@
 .type nd_hw_irq_disable, %function
 nd_hw_irq_disable:
     CPSID   IF
+    BX      lr
+
+.global nd_hw_irq_enable
+.type nd_hw_irq_enable, %function
+nd_hw_irq_enable:
+    CPSIE   IF
     BX      lr
 
 .global nd_hw_irq_save
@@ -58,7 +64,7 @@ nd_hw_do_switch:
 
     STMDB   sp!, {r4-r12, lr}
     STR     r2, [sp, #-4]!
-    MOV     r2, #FRAME_TYPE_COOP
+    MOV     r2, #FRAME_TYPE_VOLUNTARY
     PUSH    {r2}
 
     LDR     r3, =nd_current_thread
@@ -76,15 +82,18 @@ nd_hw_do_switch:
 
 restore_dispatch:
     POP     {r0}
-    CMP     r0, #FRAME_TYPE_COOP
-    BEQ     restore_coop
-    B       restore_preempt
+
+    CMP     r0, #FRAME_TYPE_VOLUNTARY
+    BEQ     restore_voluntary
+
+    CMP     r0, #FRAME_TYPE_PREEMPT
+    BEQ     restore_preempt
 
 restore_preempt:
     POP     {r0-r12 ,lr}
     RFEIA   sp!
 
-restore_coop:
+restore_voluntary:
     LDR     r2,  [sp], #4
     LDMIA   sp!, {r4-r12, lr}
     MSR     CPSR_c, r2
