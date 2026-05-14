@@ -79,14 +79,14 @@ add_custom_command(TARGET nerd POST_BUILD
 
 add_custom_target(run
     COMMAND ${CMAKE_COMMAND} -E echo "=== QEMU running. Exit: Ctrl-A then X ==="
-    COMMAND qemu-system-arm -M vexpress-a9-qemu -nographic -kernel $<TARGET_FILE:nerd>
+    COMMAND qemu-system-arm -M vexpress-a9 -nographic -kernel $<TARGET_FILE:nerd>
 
     USES_TERMINAL
 )
 
 add_custom_target(debug
     COMMAND ${CMAKE_COMMAND} -E echo "=== QEMU paused. In another terminal: arm-none-eabi-gdb build/nerd -ex 'target remote :1234' ==="
-    COMMAND qemu-system-arm -M vexpress-a9-qemu -nographic -kernel $<TARGET_FILE:nerd> -s -S
+    COMMAND qemu-system-arm -M vexpress-a9 -nographic -kernel $<TARGET_FILE:nerd> -s -S
     DEPENDS nerd
     USES_TERMINAL
 )

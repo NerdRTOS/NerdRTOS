@@ -1,8 +1,8 @@
 #include "nd_def.h"
 #include "nd_internal.h"
 
-#define FRAME_TYPE_COOP     1U
-#define FRAME_TYPE_PREEMPT  2U
+#define FRAME_TYPE_VOLUNTARY    1U
+#define FRAME_TYPE_PREEMPT      2U
 
 struct preempt_frame {
     nd_uint32_t type;
@@ -35,7 +35,6 @@ void *nd_hw_stack_init(void       *entk_fun,
     preempt_frame->pc   = (unsigned long)nd_thread_entry;
     preempt_frame->r0   = (nd_uint32_t)entk_fun;
     preempt_frame->r1   = (nd_uint32_t)parameter;
-    preempt_frame->lr   = 0;
 
     return (void *)preempt_frame;
 }
