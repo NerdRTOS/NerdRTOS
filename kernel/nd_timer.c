@@ -8,6 +8,7 @@
 
 static struct rb_root rbtree_root = RB_ROOT;
 
+
 nd_uint64_t nd_hw_get_current(void)
 {
 #if ND_CFG_TICKLESS
@@ -17,11 +18,13 @@ nd_uint64_t nd_hw_get_current(void)
 #endif
 }
 
+
 static nd_timer_t *get_leftmost_timer(void)
 {
     struct rb_node *n = rb_first(&rbtree_root);
     return n ? timer_container_of(n) : ND_NULL;
 }
+
 
 static void timer_node_insert(nd_timer_t *timer)
 {
@@ -39,6 +42,7 @@ static void timer_node_insert(nd_timer_t *timer)
     rb_link_node(&timer->node, parent, link);
     rb_insert_color(&timer->node, &rbtree_root);
 }
+
 
 static void timer_insert(nd_timer_t *timer)
 {
@@ -62,6 +66,7 @@ static void timer_insert(nd_timer_t *timer)
     timer_node_insert(timer);
 #endif
 }
+
 
 static void timer_remove(nd_timer_t *timer)
 {
@@ -94,6 +99,7 @@ static void timer_remove(nd_timer_t *timer)
 #endif
 }
 
+
 static void timer_expired(void)
 {
     for (;;) {
@@ -108,7 +114,7 @@ static void timer_expired(void)
         nd_uint64_t now;
 
         now = nd_hw_get_current();
-
+        
         if (now < leftmost_timer->expire_time)
             break;
 
@@ -136,6 +142,7 @@ static void timer_expired(void)
 #endif
 }
 
+
 void nd_timer_process(void)
 {
     nd_kernel_def();
@@ -145,6 +152,7 @@ void nd_timer_process(void)
 
     nd_kernel_unlock();
 }
+
 
 nd_err_t nd_timer_init(nd_timer_t *timer,
                        const char *name,
@@ -183,6 +191,7 @@ nd_err_t nd_timer_init(nd_timer_t *timer,
     return ND_EOK;
 }
 
+
 nd_err_t nd_timer_start(nd_timer_t *timer)
 {
     if (!timer || !timer->callback) {
@@ -206,6 +215,7 @@ nd_err_t nd_timer_start(nd_timer_t *timer)
 
     return ND_EOK;
 }
+
 
 nd_err_t nd_timer_stop(nd_timer_t *timer)
 {

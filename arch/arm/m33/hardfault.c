@@ -1,36 +1,36 @@
-#include "nd_def.h"
-#include "nd_shell.h"
+#include <stdio.h>
+#include <stdint.h>
 
 /* Assembly wrapper chooses correct stack pointer and passes to C handler */
 void HardFault_Handler(void);
 
-void hard_fault_handler_c(nd_uint32_t *stack)
+void hard_fault_handler_c(uint32_t *stack)
 {
-    nd_uint32_t r0 = stack[0];
-    nd_uint32_t r1 = stack[1];
-    nd_uint32_t r2 = stack[2];
-    nd_uint32_t r3 = stack[3];
-    nd_uint32_t r12 = stack[4];
-    nd_uint32_t lr = stack[5];
-    nd_uint32_t pc = stack[6];
-    nd_uint32_t psr = stack[7];
+    uint32_t r0 = stack[0];
+    uint32_t r1 = stack[1];
+    uint32_t r2 = stack[2];
+    uint32_t r3 = stack[3];
+    uint32_t r12 = stack[4];
+    uint32_t lr = stack[5];
+    uint32_t pc = stack[6];
+    uint32_t psr = stack[7];
 
-    nd_uint32_t cfsr = (*(volatile nd_uint32_t *)0xE000ED28);
-    nd_uint32_t hfsr = (*(volatile nd_uint32_t *)0xE000ED2C);
-    nd_uint32_t mmfar = (*(volatile nd_uint32_t *)0xE000ED34);
-    nd_uint32_t bfar = (*(volatile nd_uint32_t *)0xE000ED38);
+    uint32_t cfsr = (*(volatile uint32_t *)0xE000ED28);
+    uint32_t hfsr = (*(volatile uint32_t *)0xE000ED2C);
+    uint32_t mmfar = (*(volatile uint32_t *)0xE000ED34);
+    uint32_t bfar = (*(volatile uint32_t *)0xE000ED38);
 
-    shell_printf("\n*** HardFault ***\n");
-    shell_printf("R0  = 0x%08lx\n", r0);
-    shell_printf("R1  = 0x%08lx\n", r1);
-    shell_printf("R2  = 0x%08lx\n", r2);
-    shell_printf("R3  = 0x%08lx\n", r3);
-    shell_printf("R12 = 0x%08lx\n", r12);
-    shell_printf("LR  = 0x%08lx\n", lr);
-    shell_printf("PC  = 0x%08lx\n", pc);
-    shell_printf("PSR = 0x%08lx\n", psr);
-    shell_printf("CFSR= 0x%08lx HFSR=0x%08lx\n", cfsr, hfsr);
-    shell_printf("MMFAR=0x%08lx BFAR=0x%08lx\n", mmfar, bfar);
+    printf("\n*** HardFault ***\n");
+    printf("R0  = 0x%08lx\n", r0);
+    printf("R1  = 0x%08lx\n", r1);
+    printf("R2  = 0x%08lx\n", r2);
+    printf("R3  = 0x%08lx\n", r3);
+    printf("R12 = 0x%08lx\n", r12);
+    printf("LR  = 0x%08lx\n", lr);
+    printf("PC  = 0x%08lx\n", pc);
+    printf("PSR = 0x%08lx\n", psr);
+    printf("CFSR= 0x%08lx HFSR=0x%08lx\n", cfsr, hfsr);
+    printf("MMFAR=0x%08lx BFAR=0x%08lx\n", mmfar, bfar);
 
     /* spin here for debugger */
     while (1) {
