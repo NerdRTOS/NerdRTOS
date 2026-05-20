@@ -1,8 +1,7 @@
 #include "hardware/timer.h"
 #include "nerd.h"
-#include "nd_internal.h"
 #include <stdio.h>
-
+#include "hardware/uart.h"
 static int nd_hr_alarm = -1;
 
 static void nd_hr_alarm_callback(uint alarm_num) {
@@ -15,7 +14,12 @@ static void nd_hr_alarm_callback(uint alarm_num) {
 
 void nd_hw_hrtimer_init(void)
 {
-    nd_hr_alarm = hardware_alarm_claim_unused(true);
+    int alarm = hardware_alarm_claim_unused(false);
+    if (alarm < 0) {
+        uart_puts(uart0, "ERROR: no free alarm for hrtimer!\r\n");
+        while(1);
+    }
+    nd_hr_alarm = alarm;
     hardware_alarm_set_callback((uint)nd_hr_alarm, nd_hr_alarm_callback);
 }
 
@@ -40,3 +44,4 @@ nd_uint64_t nd_hw_hrtimer_get_current(void)
 {
     return time_us_64();
 }
+
