@@ -62,6 +62,7 @@ nd_hw_do_switch_first:
 
     CPSIE   F
     CPSIE   I
+    DSB
 
 .global isr_pendsv
 .type isr_pendsv, %function
@@ -130,9 +131,9 @@ first_switch:
     MSR     PSP, r1
 
     /* 执行异常返回：返回到线程模式并使用 PSP（EXC_RETURN = 0xFFFFFFFD） */
-    CPSIE   I
-    LDR     r2, =0xFFFFFFFD
-    BX      r2
+    LDR     lr, =0xFFFFFFFD
+    CPSIE   I    
+    BX      lr
 
 done:
     CPSIE   I
