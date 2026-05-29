@@ -69,7 +69,7 @@ static nd_err_t system_clock_init(uint32_t plln)
     rcc_osc_init.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
     rcc_osc_init.PLL.PLLState       = RCC_PLL_ON;
     rcc_osc_init.PLL.PLLSource      = RCC_PLLSOURCE_HSI_DIV2;
-    rcc_osc_init.PLL.PLLMUL         = RCC_PLL_MUL16;
+    rcc_osc_init.PLL.PLLMUL         = plln;
 
     ret = HAL_RCC_OscConfig(&rcc_osc_init);
     if (ret != HAL_OK) {
