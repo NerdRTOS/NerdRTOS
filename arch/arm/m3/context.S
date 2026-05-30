@@ -63,8 +63,9 @@ nd_hw_do_switch_first:
     LDR     r0, [r0]
     MSR     MSP, r0
 
-    CPSIE   F 
-    CPSIE   I 
+    CPSIE   F
+    CPSIE   I
+    DSB
 
 .global isr_pendsv
 .type isr_pendsv, %function
@@ -127,9 +128,11 @@ first_switch:
     ADD     r1, r1, #36
     MSR     PSP, r1
 
+    /* Execution exception return: Return to thread 
+    mode and use PSP(EXC_RETURN = 0xFFFFFFFD) */
+    LDR     lr, =0xFFFFFFFD
     CPSIE   I 
-    LDR     r2, =0xFFFFFFFD
-    BX      r2
+    BX      lr
 done:
     CPSIE   I 
     BX      lr
