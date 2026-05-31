@@ -1,6 +1,6 @@
 #include "nd_shell.h"
+#include "nd_def.h"
 #include "nd_klibc.h"
-#include "stdio.h"
 
 #define SHELL_PROMPT            "nerd@rtos:~$ "
 #define SHELL_BUFFER_SIZE       128
@@ -20,9 +20,26 @@ extern const struct nd_shell_cmd __shell_cmd_end;
 static char shell_buf[SHELL_BUFFER_SIZE];
 static nd_uint8_t shell_len = 0;
 
+static char shell_last_line_end = ASCII_NULL;
+
+static nd_bool_t shell_is_line_end(char c)
+{
+    if (c != ASCII_CR && c != ASCII_LF) {
+        shell_last_line_end = ASCII_NULL;
+        return ND_FALSE;
+    }
+
+    if (shell_last_line_end == ASCII_NULL || c == shell_last_line_end) {
+        shell_last_line_end = c;
+        return ND_TRUE;
+    }
+
+    return ND_FALSE;
+}
+
 static nd_bool_t shell_input(char c)
 {
-    if (c == ASCII_CR || c == ASCII_LF) {
+    if (shell_is_line_end(c)) {
         shell_puts("\r\n");
         shell_buf[shell_len] = '\0';
         return ND_TRUE;
