@@ -20,12 +20,17 @@ void usart_init(uint32_t baudrate)
 
 int usart_putc(uint8_t c)
 {
-    HAL_StatusTypeDef ret;
-
-    ret = HAL_UART_Transmit(&g_uart1_handle, &c, 1, HAL_MAX_DELAY);
-    if (ret != HAL_OK) {
-        return -1;
+    /*
+     * Direct register TX: avoids HAL_UART_Transmit which manipulates
+     * CR1 (disabling/re-enabling the UART), corrupting the RXNEIE
+     * interrupt-enable bit set by HAL_UART_Receive_IT.  Writing DR
+     * directly when TXE is set does not touch CR1 and therefore does
+     * not interfere with interrupt-driven reception on the same USART.
+     */
+    while (!(USART_UX->SR & USART_SR_TXE)) {
     }
+
+    USART_UX->DR = c;
 
     return 0;
 }
