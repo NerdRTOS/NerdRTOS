@@ -4,7 +4,7 @@
 #include "nd_shell.h"
 #include "nd_klibc.h"
 
-#define BUF_SIZE        64
+#define BUF_SIZE        128
 
 typedef struct {
     char        buf[BUF_SIZE];

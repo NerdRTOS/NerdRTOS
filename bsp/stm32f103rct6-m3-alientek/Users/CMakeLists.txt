@@ -8,7 +8,7 @@ set(SYS_CLOCK_SOURCE
 
 # Set path and found file
 # Cortex-M3 arch
-set(ARCH_PATH ${CMAKE_SOURCE_DIR}/../../arch/arm/cm3)
+set(ARCH_PATH ${CMAKE_SOURCE_DIR}/../../arch/arm/m3)
 file(GLOB_RECURSE ARCH
     ${ARCH_PATH}/*.c
     ${ARCH_PATH}/*.S 
