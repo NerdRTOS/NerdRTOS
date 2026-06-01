@@ -1,3 +1,4 @@
+#include "nd_def.h"
 #include "usart.h"
 #include "nerd.h"
 #include "nd_internal.h"
@@ -22,7 +23,7 @@ void shell_init(void)
     nd_mutex_init(&put_mutex);
 }
 
-int shell_putc(char c)
+nd_int32_t shell_putc(char c)
 {
     return usart_putc((uint8_t)c);
 }

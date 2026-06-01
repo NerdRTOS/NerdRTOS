@@ -4,6 +4,7 @@
 
 #define SHELL_PROMPT            "nerd@rtos:~$ "
 #define SHELL_BUFFER_SIZE       128
+#define SHELL_HISTORY_DEPTH     8
 #define ARGC_MAX                8
 
 #define ASCII_PRINTABLE_START   0x20
@@ -13,14 +14,28 @@
 #define ASCII_BACKSPACE         0x08
 #define ASCII_DEL               0x7F
 #define ASCII_NULL              '\0'
+#define ASCII_ESC               0x1B
+
+#define ANSI_CSI_PREFIX         '['
+#define ANSI_ARROW_UP           'A'
+#define ANSI_ARROW_DOWN         'B'
 
 extern const struct nd_shell_cmd __shell_cmd_start;
 extern const struct nd_shell_cmd __shell_cmd_end;
 
 static char shell_buf[SHELL_BUFFER_SIZE];
 static nd_uint8_t shell_len = 0;
-
 static char shell_last_line_end = ASCII_NULL;
+
+typedef struct {
+    char history[SHELL_HISTORY_DEPTH][SHELL_BUFFER_SIZE];
+    nd_uint8_t count;
+    nd_uint8_t write_pos;
+    nd_int8_t browse_pos;
+    shell_input_state_t state;
+} shell_history_t;
+
+static shell_history_t shell_history;
 
 static nd_bool_t shell_is_line_end(char c)
 {
@@ -37,11 +52,97 @@ static nd_bool_t shell_is_line_end(char c)
     return ND_FALSE;
 }
 
+static void shell_replace_input(const char *line)
+{
+    while (shell_len > 0) {
+        shell_len--;
+        shell_putc('\b');
+        shell_putc(' ');
+        shell_putc('\b');
+    }
+
+    while (line[shell_len] != ASCII_NULL && shell_len < SHELL_BUFFER_SIZE - 1) {
+        shell_buf[shell_len] = line[shell_len];
+        shell_putc(line[shell_len]);
+        shell_len++;
+    }
+
+    shell_buf[shell_len] = ASCII_NULL;
+}
+
+static nd_uint8_t shell_history_browse_index(void)
+{
+    return (shell_history.write_pos + SHELL_HISTORY_DEPTH - 1 - shell_history.browse_pos) %
+           SHELL_HISTORY_DEPTH;
+}
+
+static void shell_history_prev(void)
+{
+    if (shell_history.count == 0 ||
+        shell_history.browse_pos >= (nd_int8_t)(shell_history.count - 1)) {
+        return;
+    }
+
+    shell_history.browse_pos++;
+    shell_replace_input(shell_history.history[shell_history_browse_index()]);
+}
+
+static void shell_history_next(void)
+{
+    if (shell_history.browse_pos < 0) {
+        return;
+    }
+
+    shell_history.browse_pos--;
+
+    if (shell_history.browse_pos < 0) {
+        shell_replace_input("");
+        return;
+    }
+
+    shell_replace_input(shell_history.history[shell_history_browse_index()]);
+}
+
+static nd_bool_t shell_handle_ansi(char c) {
+    switch (shell_history.state) {
+    case SHELL_INPUT_NORMAL:
+        if (c == ASCII_ESC) {
+            shell_history.state = SHELL_INPUT_ESC;
+            return ND_TRUE;
+        }
+        return ND_FALSE;
+
+    case SHELL_INPUT_ESC:
+        if (c == ANSI_CSI_PREFIX) {
+            shell_history.state = SHELL_INPUT_CSI;
+        } else {
+            shell_history.state = SHELL_INPUT_NORMAL;
+        }
+        return ND_TRUE;
+
+    case SHELL_INPUT_CSI:
+        if (c == ANSI_ARROW_UP) {
+            shell_history_prev();
+        } else if (c == ANSI_ARROW_DOWN) {
+            shell_history_next();
+        }
+        shell_history.state = SHELL_INPUT_NORMAL;
+        return ND_TRUE;
+    }
+
+    return ND_FALSE;
+}
+
 static nd_bool_t shell_input(char c)
 {
+    if (shell_handle_ansi(c)) {
+        return ND_FALSE;
+    }
+
     if (shell_is_line_end(c)) {
         shell_puts("\r\n");
         shell_buf[shell_len] = '\0';
+        shell_history.browse_pos = -1;
         return ND_TRUE;
     }
 
@@ -51,12 +152,14 @@ static nd_bool_t shell_input(char c)
             shell_putc('\b');
             shell_putc(' ');
             shell_putc('\b');
+            shell_history.browse_pos = -1;
         }
         return ND_FALSE;
     }
 
     if (c >= ASCII_PRINTABLE_START && c <= ASCII_PRINTABLE_END) {
         if (shell_len < SHELL_BUFFER_SIZE - 1) {
+            shell_history.browse_pos = -1;
             shell_buf[shell_len++] = c;
             shell_putc(c);
         }
@@ -92,11 +195,45 @@ static const struct nd_shell_cmd *shell_find(const char *name)
     return ND_NULL;
 }
 
+static void shell_history_init(void)
+{
+    shell_history.state = SHELL_INPUT_NORMAL;
+    shell_history.count = 0;
+    shell_history.write_pos = 0;
+    shell_history.browse_pos = -1;
+}
+
+static nd_bool_t shell_history_is_last_duplicate(const char *line)
+{
+    if (shell_history.count == 0) {
+        return ND_FALSE;
+    }
+
+    return nd_strcmp(shell_history.history[(shell_history.write_pos + SHELL_HISTORY_DEPTH - 1) % SHELL_HISTORY_DEPTH], line) == 0;
+}
+
+static void shell_history_save(char *buf)
+{
+    if (shell_history_is_last_duplicate(buf)) {
+        return;
+    }
+
+    nd_strncpy(shell_history.history[shell_history.write_pos], buf, SHELL_BUFFER_SIZE);
+
+    if (shell_history.count < SHELL_HISTORY_DEPTH) {
+        shell_history.count++;
+    }
+
+    shell_history.write_pos = (shell_history.write_pos + 1) % SHELL_HISTORY_DEPTH;
+}
+
 void nd_shell_task_entry(void *para)
 {
     (void)para;
 
     char *argv[ARGC_MAX];
+
+    shell_history_init();
 
     shell_puts(SHELL_PROMPT);
 
@@ -108,6 +245,8 @@ void nd_shell_task_entry(void *para)
         }
 
         if (shell_len > 0) {
+            shell_history_save(shell_buf);
+
             nd_uint8_t argc = shell_parse(shell_buf, argv, ARGC_MAX);
 
             if (argc > 0) {
