@@ -1,3 +1,4 @@
+#include "nd_def.h"
 #include "nerd.h"
 #include "nd_shell.h"
 #include "nd_klibc.h"
@@ -58,7 +59,7 @@ void shell_init(void)
     UART0_IMSC |= UART_IMSC_RXIM;
 }
 
-int shell_putc(char c)
+nd_int32_t shell_putc(char c)
 {
     while (UART0_FR & UART_FR_TXFF) {
         nd_thread_yield();

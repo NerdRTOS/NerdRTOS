@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "nd_def.h"
 #include "pico/stdlib.h"
 #include "nerd.h"
 #include "nd_internal.h"
@@ -51,7 +51,7 @@ void shell_init(void)
     SHELL_UART_HW->imsc |= UART_UARTIMSC_RXIM_BITS;
 }
 
-int shell_putc(char c)
+nd_int32_t shell_putc(char c)
 {
     while ((SHELL_UART_HW->fr & UART_UARTFR_TXFF_BITS)) {
         nd_thread_yield();
