@@ -50,6 +50,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cache ARM toolchain
+        if: ${{ !matrix.needs_riscv_toolchain }}
         id: cache-toolchain
         uses: actions/cache@v4
         with:
@@ -57,13 +58,27 @@ jobs:
           key: arm-toolchain-13.3
 
       - name: Install ARM toolchain
-        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        if: ${{ !matrix.needs_riscv_toolchain && steps.cache-toolchain.outputs.cache-hit != 'true' }}
         run: |
           wget -q https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
           tar xf arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
 
       - name: Add toolchain to PATH
+        if: ${{ !matrix.needs_riscv_toolchain }}
         run: echo "${{ github.workspace }}/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+
+      - name: Install RISC-V toolchain
+        if: matrix.needs_riscv_toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget xz-utils
+          mkdir -p "${{ github.workspace }}/tools"
+          cd "${{ github.workspace }}/tools"
+          wget -q https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v13.2.0-2/xpack-riscv-none-elf-gcc-13.2.0-2-linux-x64.tar.gz
+          tar -xf xpack-riscv-none-elf-gcc-13.2.0-2-linux-x64.tar.gz
+          echo "${{ github.workspace }}/tools/xpack-riscv-none-elf-gcc-13.2.0-2/bin" >> $GITHUB_PATH
+          ln -s "${{ github.workspace }}/tools/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gcc" "${{ github.workspace }}/tools/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv32-unknown-elf-gcc"
+          ln -s "${{ github.workspace }}/tools/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-g++" "${{ github.workspace }}/tools/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv32-unknown-elf-g++"
 
       - name: Cache Pico SDK
         if: matrix.needs_pico_sdk
@@ -88,7 +103,11 @@ jobs:
       - name: Configure ${{ matrix.id }}
         env:
           PICO_SDK_PATH: ${{ github.workspace }}/pico-sdk
-        run: cmake -S "${{ matrix.source_dir }}" -B "${{ matrix.build_dir }}" ${{ matrix.cmake_args }}
+        run: |
+          if [ "${{ matrix.needs_riscv_toolchain }}" = "true" ]; then
+            export PICO_TOOLCHAIN_PATH="${{ github.workspace }}/tools/xpack-riscv-none-elf-gcc-13.2.0-2/bin"
+          fi
+          cmake -S "${{ matrix.source_dir }}" -B "${{ matrix.build_dir }}" ${{ matrix.cmake_args }}
 
       - name: Build ${{ matrix.id }}
         run: |
@@ -112,3 +131,4 @@ jobs:
           fi
 
           exit "$status"
+
