@@ -1,4 +1,5 @@
 #include "hardware/timer.h"
+#include "hardware/irq.h"
 #include "nerd.h"
 #include "nd_internal.h"
 #include <stdio.h>
@@ -16,7 +17,12 @@ static void nd_hr_alarm_callback(uint alarm_num) {
 void nd_hw_hrtimer_init(void)
 {
     nd_hr_alarm = hardware_alarm_claim_unused(true);
+    if (nd_hr_alarm < 0) {
+        return;
+    }
+
     hardware_alarm_set_callback((uint)nd_hr_alarm, nd_hr_alarm_callback);
+    irq_set_priority(TIMER0_IRQ_0 + (uint)nd_hr_alarm, 0);
 }
 
 void nd_hw_hrtimer_set_expire(nd_uint64_t expire)
@@ -40,3 +46,4 @@ nd_uint64_t nd_hw_hrtimer_get_current(void)
 {
     return time_us_64();
 }
+

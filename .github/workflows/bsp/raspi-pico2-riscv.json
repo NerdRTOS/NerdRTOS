@@ -1,0 +1,10 @@
+{
+  "id": "raspi-pico2-riscv",
+  "source_dir": "bsp/raspi-pico2",
+  "build_dir": "build/raspi-pico2-riscv",
+  "cmake_args": "-DPICO_BOARD=pico2 -DPICO_PLATFORM=rp2350-riscv -DPICO_COMPILER=pico_riscv_gcc -D-DPICO_GCC_TRIPLE=riscv32-unknown-elf",
+  "needs_pico_sdk": true,
+  "needs_riscv_toolchain": true,
+  "run_qemu": false
+}
+
