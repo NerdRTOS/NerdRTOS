@@ -5,6 +5,12 @@
 #include "nd_shell.h"
 #include "nd_klibc.h"
 
+#if defined(NERD_RISCV_PORT)
+#include "irq.h"
+
+void riscv_trap_init(void);
+#endif
+
 #define SHELL_UART_HW   uart0_hw
 #define BUF_SIZE        64
 
@@ -18,10 +24,8 @@ static ring_buf_t   rx_buf;
 static nd_sem_t     rx_sem;
 static nd_mutex_t   put_mutex;
 
-static void uart_rx_isr(void)
+static void uart_rx_drain(void)
 {
-    nd_enter_interrupt();
-
     while (!(SHELL_UART_HW->fr & UART_UARTFR_RXFE_BITS)) {
         char c = (char)(SHELL_UART_HW->dr & 0xFF);
 
@@ -34,17 +38,42 @@ static void uart_rx_isr(void)
 
         nd_sem_release(&rx_sem);
     }
+}
+
+#if !defined(NERD_RISCV_PORT)
+static void uart_rx_isr(void)
+{
+    nd_enter_interrupt();
+
+    uart_rx_drain();
 
     nd_exit_interrupt();
     nd_try_schedule_irqsave();
 }
+#endif
+
+#if defined(NERD_RISCV_PORT)
+static void uart_rx_isr_riscv(void *arg)
+{
+    (void)arg;
+
+    uart_rx_drain();
+}
+#endif
 
 void shell_init(void)
 {
     nd_sem_init(&rx_sem, 0);
     nd_mutex_init(&put_mutex);
 
+#if defined(NERD_RISCV_PORT)
+    riscv_irq_init();
+    riscv_trap_init();
+    riscv_irq_register(UART0_IRQ, uart_rx_isr_riscv, ND_NULL);
+    riscv_irq_enable(UART0_IRQ);
+#else
     irq_set_exclusive_handler(UART0_IRQ, uart_rx_isr);
+#endif
     irq_set_enabled(UART0_IRQ, true);
 
     SHELL_UART_HW->lcr_h &= ~UART_UARTLCR_H_FEN_BITS;
@@ -101,3 +130,4 @@ void shell_printf(const char *fmt, ...)
 
     shell_puts(buf);
 }
+

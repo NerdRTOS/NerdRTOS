@@ -50,6 +50,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cache ARM toolchain
+        if: ${{ !matrix.needs_riscv_toolchain }}
         id: cache-toolchain
         uses: actions/cache@v4
         with:
@@ -57,13 +58,36 @@ jobs:
           key: arm-toolchain-13.3
 
       - name: Install ARM toolchain
-        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        if: ${{ !matrix.needs_riscv_toolchain && steps.cache-toolchain.outputs.cache-hit != 'true' }}
         run: |
           wget -q https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
           tar xf arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
 
       - name: Add toolchain to PATH
+        if: ${{ !matrix.needs_riscv_toolchain }}
         run: echo "${{ github.workspace }}/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+
+      - name: Install RISC-V toolchain
+        if: matrix.needs_riscv_toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget xz-utils
+          mkdir -p "${{ github.workspace }}/tools"
+          cd "${{ github.workspace }}/tools"
+          wget -q https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v13.2.0-2/xpack-riscv-none-elf-gcc-13.2.0-2-linux-x64.tar.gz
+          tar -xf xpack-riscv-none-elf-gcc-13.2.0-2-linux-x64.tar.gz
+          toolchain_dir="$(find "${{ github.workspace }}/tools" -maxdepth 1 -type d -name 'xpack-riscv-none-elf-gcc-*' | head -n 1)"
+          if [ -z "$toolchain_dir" ] || [ ! -d "$toolchain_dir/bin" ]; then
+            echo "RISC-V toolchain directory not found"
+            find "${{ github.workspace }}/tools" -maxdepth 2 -type d -print
+            exit 1
+          fi
+          for tool in "$toolchain_dir"/bin/riscv-none-elf-*; do
+            name="$(basename "$tool")"
+            ln -sf "$name" "$toolchain_dir/bin/${name/riscv-none-elf/riscv32-unknown-elf}"
+          done
+          echo "$toolchain_dir/bin" >> "$GITHUB_PATH"
+          echo "PICO_TOOLCHAIN_PATH=$toolchain_dir/bin" >> "$GITHUB_ENV"
 
       - name: Cache Pico SDK
         if: matrix.needs_pico_sdk
@@ -112,3 +136,4 @@ jobs:
           fi
 
           exit "$status"
+
