@@ -9,16 +9,29 @@ set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
+if(PICO_PLATFORM STREQUAL "rp2350-riscv")
+    set(NERD_ARCH_SOURCES
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/context.S
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/port.c
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/trap.c
+    )
+else()
+    set(NERD_ARCH_SOURCES
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/context.S
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/port.c
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/hardfault.c
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/systick.c
+    )
+endif()
+
 add_executable(nerd
     main.c
     nd_hrtimer.c
     nd_led.c
+    rp2350_irq.c
     shell_port.c
     app.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/context.S
-    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/port.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/hardfault.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/systick.c
+    ${NERD_ARCH_SOURCES}
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_scheduler.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_timer.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_klibc.c
@@ -38,6 +51,7 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_sem.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_memheap.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_mempool.c
+    ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_preempt.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/case/test_thread_lifecycle.c
 )
 
@@ -86,3 +100,4 @@ target_link_options(nerd PRIVATE -Os
 )
 
 target_link_libraries(nerd pico_stdlib)
+

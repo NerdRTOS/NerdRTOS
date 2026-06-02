@@ -1,4 +1,4 @@
-#include "nd_def.h"
+#include <stdio.h>
 #include "pico/stdlib.h"
 #include "nerd.h"
 #include "nd_internal.h"
@@ -18,7 +18,7 @@ static ring_buf_t   rx_buf;
 static nd_sem_t     rx_sem;
 static nd_mutex_t   put_mutex;
 
-static void uart_rx_isr(void)
+void nd_rp2350_uart0_irq_handler(void)
 {
     nd_enter_interrupt();
 
@@ -36,7 +36,6 @@ static void uart_rx_isr(void)
     }
 
     nd_exit_interrupt();
-    nd_try_schedule_irqsave();
 }
 
 void shell_init(void)
@@ -44,14 +43,14 @@ void shell_init(void)
     nd_sem_init(&rx_sem, 0);
     nd_mutex_init(&put_mutex);
 
-    irq_set_exclusive_handler(UART0_IRQ, uart_rx_isr);
+    irq_set_exclusive_handler(UART0_IRQ, nd_rp2350_uart0_irq_handler);
     irq_set_enabled(UART0_IRQ, true);
 
     SHELL_UART_HW->lcr_h &= ~UART_UARTLCR_H_FEN_BITS;
     SHELL_UART_HW->imsc |= UART_UARTIMSC_RXIM_BITS;
 }
 
-nd_int32_t shell_putc(char c)
+int shell_putc(char c)
 {
     while ((SHELL_UART_HW->fr & UART_UARTFR_TXFF_BITS)) {
         nd_thread_yield();
@@ -101,3 +100,4 @@ void shell_printf(const char *fmt, ...)
 
     shell_puts(buf);
 }
+

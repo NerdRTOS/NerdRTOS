@@ -105,9 +105,7 @@ static void timer_expired(void)
             return;
         }
 
-        nd_uint64_t now;
-
-        now = nd_hw_get_current();
+        nd_uint64_t now = nd_hw_get_current();
 
         if (now < leftmost_timer->expire_time)
             break;
@@ -222,3 +220,4 @@ nd_err_t nd_timer_stop(nd_timer_t *timer)
 
     return ND_EOK;
 }
+

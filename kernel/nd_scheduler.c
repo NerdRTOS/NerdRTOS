@@ -184,7 +184,9 @@ void nd_schedule_irq_exit(void)
 
     nd_thread_t *next = nd_schedule_pick_next();
 
-    if (!next) return;
+    if (!next) {
+        return;
+    }
 
     nd_context_switch_cb(next);
 }
@@ -357,3 +359,4 @@ void nd_thread_delay(nd_uint64_t delay)
 
     nd_kernel_unlock();
 }
+
