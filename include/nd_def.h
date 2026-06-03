@@ -67,8 +67,8 @@ typedef unsigned long                   nd_err_t;        // Type for error numbe
 #define ND_CONFIG_YES                   (1)
 #define ND_CONFIG_NO                    (0)
 
-#define Y                               ND_CONFIG_YES
-#define N                               ND_CONFIG_NO
+#define ND_YES                          ND_CONFIG_YES
+#define ND_NO                           ND_CONFIG_NO
 
 #if ND_CFG_DEBUG
     #define ND_ASSERT(expr)  do { if (!(expr)) { while (1); } } while (0)
