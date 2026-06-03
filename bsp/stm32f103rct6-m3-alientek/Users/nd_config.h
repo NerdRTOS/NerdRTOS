@@ -11,8 +11,8 @@
 
 #define ND_IDLE_STACK_SIZE  512
 
-#define ND_CFG_TICKLESS     N
+#define ND_CFG_TICKLESS     ND_NO
 
-#define ND_CFG_DEBUG        N
+#define ND_CFG_DEBUG        ND_NO
 
 #endif /* __ND_CONFIG_H__ */
