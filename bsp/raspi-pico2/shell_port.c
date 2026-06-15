@@ -62,6 +62,20 @@ nd_int32_t shell_putc(char c)
     return 0;
 }
 
+void nd_assert_puts(const char *str)
+{
+    if (str == ND_NULL) {
+        return;
+    }
+
+    while (*str) {
+        while ((SHELL_UART_HW->fr & UART_UARTFR_TXFF_BITS)) {
+        }
+
+        SHELL_UART_HW->dr = *str++;
+    }
+}
+
 char shell_getc(void)
 {
     nd_sem_take(&rx_sem, ND_TIMEOUT_FOREVER);
