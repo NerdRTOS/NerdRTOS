@@ -12,9 +12,9 @@ if(PICO_PLATFORM STREQUAL "rp2350-riscv")
         ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/context.S
         ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/irq.c
         ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/port.c
-        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/timer.c
         ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/trap.S
         ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/trap.c
+        ${CMAKE_CURRENT_LIST_DIR}/nd_hrtimer.c
     )
 else()
     set(NERD_ARCH_SOURCES
