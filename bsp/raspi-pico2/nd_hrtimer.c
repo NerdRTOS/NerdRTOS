@@ -40,3 +40,4 @@ nd_uint64_t nd_hw_hrtimer_get_current(void)
 {
     return time_us_64();
 }
+

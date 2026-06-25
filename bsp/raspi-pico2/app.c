@@ -13,3 +13,4 @@ void nd_app_init(void)
     nd_thread_create(&shell, "shell", nd_shell_task_entry,
                  30, ND_NULL, shell_stack, sizeof(shell_stack), ND_THREAD_OPT_NONE, 0);
 }
+

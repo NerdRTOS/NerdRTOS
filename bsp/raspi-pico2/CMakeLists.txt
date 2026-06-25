@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-
 include(pico_sdk_import.cmake)
-
 project(nerd C CXX ASM)
 
 set(CMAKE_C_STANDARD 11)
@@ -9,16 +7,29 @@ set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
+if(PICO_PLATFORM STREQUAL "rp2350-riscv")
+    set(NERD_ARCH_SOURCES
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/context.S
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/port.c
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/trap.S
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32/trap.c
+    )
+else()
+    set(NERD_ARCH_SOURCES
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/context.S
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/port.c
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/hardfault.c
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/systick.c
+    )
+endif()
+
 add_executable(nerd
     main.c
     nd_hrtimer.c
     nd_led.c
     shell_port.c
     app.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/context.S
-    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/port.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/hardfault.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../arch/arm/m33/systick.c
+    ${NERD_ARCH_SOURCES}
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_scheduler.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_timer.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_klibc.c
@@ -69,6 +80,12 @@ target_include_directories(nerd PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/../../components/ntest/include
 )
 
+if(PICO_PLATFORM STREQUAL "rp2350-riscv")
+    target_include_directories(nerd PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/../../arch/riscv/rv32
+    )
+endif()
+
 target_include_directories(nerd SYSTEM PRIVATE
     ${PICO_SDK_PATH}/src/rp2_common
 )
@@ -86,3 +103,4 @@ target_link_options(nerd PRIVATE -Os
 )
 
 target_link_libraries(nerd pico_stdlib)
+
