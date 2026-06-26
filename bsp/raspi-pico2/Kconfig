@@ -1,0 +1,14 @@
+if BSP_RASPI_PICO2
+
+menu "Raspberry Pi Pico 2 BSP"
+
+config ND_CPU_CLOCK_HZ
+    int "CPU clock frequency"
+    default 150000000
+    help
+        CPU clock frequency in Hz.
+
+endmenu
+
+endif
+

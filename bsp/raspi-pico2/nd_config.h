@@ -1,18 +1,29 @@
 #ifndef __ND_CONFIG_H__
 #define __ND_CONFIG_H__
 
-#define ND_CPU_CLOCK_HZ     150000000UL
+#include <autoconf.h>
 
-#define ND_NAME_MAX_SIZE    16
+#define ND_CPU_CLOCK_HZ     CONFIG_ND_CPU_CLOCK_HZ
 
-#define ND_TICKLESS_FREQ    1000000
+#define ND_NAME_MAX_SIZE    CONFIG_ND_NAME_MAX_SIZE
 
-#define ND_TICKS_PER_SEC    1000
+#define ND_TICKLESS_FREQ    CONFIG_ND_TICKLESS_FREQ
 
-#define ND_IDLE_STACK_SIZE  512
+#define ND_TICKS_PER_SEC    CONFIG_ND_TICKS_PER_SEC
 
-#define ND_CFG_TICKLESS     Y
+#define ND_IDLE_STACK_SIZE  CONFIG_ND_IDLE_STACK_SIZE
 
-#define ND_CFG_DEBUG        N
+#ifdef CONFIG_ND_CFG_TICKLESS
+    #define ND_CFG_TICKLESS     Y
+#else
+    #define ND_CFG_TICKLESS     N
+#endif
+
+#ifdef CONFIG_ND_CFG_DEBUG
+    #define ND_CFG_DEBUG        Y
+#else
+    #define ND_CFG_DEBUG        N
+#endif
 
 #endif /* __ND_CONFIG_H__ */
+

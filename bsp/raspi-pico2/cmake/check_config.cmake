@@ -1,0 +1,10 @@
+include_guard(GLOBAL)
+
+if(CONFIG_ARCH_RISCV_RV32 AND NOT PICO_PLATFORM STREQUAL "rp2350-riscv")
+    message(FATAL_ERROR "CONFIG_ARCH_RISCV_RV32 requires -DPICO_PLATFORM=rp2350-riscv")
+endif()
+
+if(CONFIG_ARCH_ARM_M33 AND PICO_PLATFORM STREQUAL "rp2350-riscv")
+    message(FATAL_ERROR "CONFIG_ARCH_ARM_M33 cannot be used with -DPICO_PLATFORM=rp2350-riscv")
+endif()
+

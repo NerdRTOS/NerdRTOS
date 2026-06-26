@@ -1,0 +1,49 @@
+menu "Kernel"
+
+config ND_NAME_MAX_SIZE
+    int "Kernel object name max size"
+    default 16
+    help
+        Maximum size of kernel object names.
+
+config ND_IDLE_STACK_SIZE
+    int "Idle thread stack size"
+    default 512
+    help
+        Stack size used by the idle thread.
+
+menu "Timer"
+
+config ND_CFG_TICKLESS
+    bool "Enable tickless timer"
+    default y
+    help
+        Use the high-resolution hardware timer path instead of periodic ticks.
+
+config ND_TICKLESS_FREQ
+    int "Tickless timer frequency"
+    default 1000000
+    depends on ND_CFG_TICKLESS
+    help
+        High-resolution timer frequency used by tickless mode.
+
+config ND_TICKS_PER_SEC
+    int "System ticks per second"
+    default 1000
+    help
+        Periodic system tick rate.
+
+endmenu
+
+menu "Debug"
+
+config ND_CFG_DEBUG
+    bool "Enable debug checks"
+    default n
+    help
+        Enable debug assertions and memory heap magic checks.
+
+endmenu
+
+endmenu
+

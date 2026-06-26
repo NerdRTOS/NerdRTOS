@@ -1,0 +1,22 @@
+menu "Architecture"
+
+choice
+    prompt "Target architecture"
+    default ARCH_ARM_M33 if BSP_RASPI_PICO2
+
+config ARCH_ARM_M33
+    bool "ARM Cortex-M33"
+    depends on BSP_RASPI_PICO2
+    help
+        Build NerdRTOS for the RP2350 ARM Cortex-M33 cores.
+
+config ARCH_RISCV_RV32
+    bool "RISC-V RV32"
+    depends on BSP_RASPI_PICO2
+    help
+        Build NerdRTOS for the RP2350 RISC-V cores.
+
+endchoice
+
+endmenu
+

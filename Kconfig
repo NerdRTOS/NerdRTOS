@@ -1,0 +1,23 @@
+mainmenu "NerdRTOS Configuration"
+
+choice
+    prompt "Target BSP"
+    default BSP_RASPI_PICO2
+
+config BSP_RASPI_PICO2
+    bool "Raspberry Pi Pico 2"
+
+config BSP_VEXPRESS_A9_QEMU
+    bool "VExpress A9 QEMU"
+
+config BSP_STM32F103RCT6
+    bool "STM32F103RCT6"
+
+endchoice
+
+source "arch/Kconfig"
+
+source "kernel/Kconfig"
+
+source "bsp/raspi-pico2/Kconfig"
+
