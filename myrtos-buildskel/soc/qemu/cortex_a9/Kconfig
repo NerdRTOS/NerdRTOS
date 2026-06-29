@@ -1,0 +1,14 @@
+if SOC_QEMU_CORTEX_A9
+
+config SOC_NAME
+    string
+    default "cortex_a9"
+
+config QEMU_A9_NUM_CORES
+    int "Number of simulated CPU cores"
+    default 1
+    help
+      QEMU vexpress-a9 可以模拟多核，这里先固定演示单核，
+      多核调度是内核层的事，不影响这一层的 Kconfig 结构。
+
+endif # SOC_QEMU_CORTEX_A9

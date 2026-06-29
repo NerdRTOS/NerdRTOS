@@ -23,10 +23,7 @@
 
 MEMORY
 {
-    INCLUDE "pico_flash_region.ld"
-    RAM(rwx) : ORIGIN =  0x20000000, LENGTH = 512k
-    SCRATCH_X(rwx) : ORIGIN = 0x20080000, LENGTH = 4k
-    SCRATCH_Y(rwx) : ORIGIN = 0x20081000, LENGTH = 4k
+    INCLUDE "nerd_memory_regions.ld"
 }
 
 ENTRY(_entry_point)

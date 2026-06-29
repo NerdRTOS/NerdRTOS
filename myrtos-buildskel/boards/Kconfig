@@ -1,0 +1,18 @@
+# 所有板子在这里汇总成一个互斥选择（choice），
+# 每个 board 自己的 "config BOARD_XXX" 定义放在各自目录的 Kconfig.<board> 里，
+# 这里只负责把它们 source 进同一个 choice。
+
+choice
+    prompt "Board"
+
+source "boards/raspberrypi/pico2/Kconfig.pico2"
+source "boards/qemu/qemu_a9/Kconfig.qemu_a9"
+source "boards/st/nucleo_f429zi/Kconfig.nucleo_f429zi"
+
+endchoice
+
+# 板级专属的配置项（非选择类），各自包在 if BOARD_XXX / endif 里，
+# 所以可以放在 choice 外面统一 source，不会互相干扰。
+source "boards/raspberrypi/pico2/Kconfig"
+source "boards/qemu/qemu_a9/Kconfig"
+source "boards/st/nucleo_f429zi/Kconfig"

@@ -1,0 +1,7 @@
+if ARCH_RISCV
+
+config ARCH
+    string
+    default "riscv"
+
+endif # ARCH_RISCV

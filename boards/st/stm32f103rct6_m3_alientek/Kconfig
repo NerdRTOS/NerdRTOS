@@ -1,0 +1,7 @@
+if BOARD_STM32F103RCT6_M3_ALIENTEK
+
+config BOARD
+    string
+    default "stm32f103rct6/m3"
+
+endif # BOARD_STM32F103RCT6_M3_ALIENTEK

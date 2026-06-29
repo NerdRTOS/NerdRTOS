@@ -1,0 +1,36 @@
+/dts-v1/;
+
+/ {
+    model = "ST STM32F103RCT6 Alientek Mini";
+    compatible = "st,stm32f103rct6-alientek";
+
+    chosen {
+        myrtos,console = &usart1;
+        myrtos,timer = &systick;
+    };
+
+    memory@20000000 {
+        device_type = "memory";
+        reg = <0x20000000 0x0000C000>;
+    };
+
+    flash@08000000 {
+        reg = <0x08000000 0x00040000>;
+    };
+
+    usart1: serial@40013800 {
+        compatible = "st,stm32-usart";
+        reg = <0x40013800 0x400>;
+        irq = <37>;
+        current-speed = <115200>;
+        status = "okay";
+    };
+
+    systick: timer@e000e010 {
+        compatible = "arm,cortex-m-systick";
+        reg = <0xE000E010 0x10>;
+        irq = <15>;
+        clock-frequency = <72000000>;
+        status = "okay";
+    };
+};

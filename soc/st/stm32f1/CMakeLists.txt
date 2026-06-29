@@ -1,0 +1,2 @@
+# Step 1 wrapper only. SoC-owned STM32F1 sources will move here in a later step.
+set(NERD_SOC_LEGACY_BSP_DIR ${PROJECT_ROOT}/bsp/stm32f103rct6-m3-alientek CACHE INTERNAL "Legacy STM32F103 BSP directory")

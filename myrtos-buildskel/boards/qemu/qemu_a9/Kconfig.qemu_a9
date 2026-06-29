@@ -1,0 +1,3 @@
+config BOARD_QEMU_A9
+    bool "QEMU Cortex-A9 (vexpress-a9)"
+    select SOC_QEMU_CORTEX_A9

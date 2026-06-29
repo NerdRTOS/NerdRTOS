@@ -1,0 +1,3 @@
+config BOARD_NUCLEO_F429ZI
+    bool "STM32 Nucleo-F429ZI"
+    select SOC_STM32F4

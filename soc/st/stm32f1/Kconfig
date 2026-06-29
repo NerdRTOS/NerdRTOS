@@ -1,0 +1,7 @@
+if SOC_STM32F103
+
+config SOC
+    string
+    default "stm32f103"
+
+endif # SOC_STM32F103

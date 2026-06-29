@@ -4,9 +4,15 @@
 #include "nd_internal.h"
 #include "nd_shell.h"
 #include "nd_klibc.h"
+#include "nerd_hw_metadata.h"
 
 #define SHELL_UART_HW   uart0_hw
+#define SHELL_UART_IRQ  NERD_BOARD_CONSOLE_IRQ
 #define BUF_SIZE        64
+
+#if NERD_BOARD_CONSOLE_BASE != 0x40070000
+#error "Pico 2 shell_port.c expects the DTS console to be uart0"
+#endif
 
 typedef struct {
     char        buf[BUF_SIZE];
@@ -44,8 +50,8 @@ void shell_init(void)
     nd_sem_init(&rx_sem, 0);
     nd_mutex_init(&put_mutex);
 
-    irq_set_exclusive_handler(UART0_IRQ, uart_rx_isr);
-    irq_set_enabled(UART0_IRQ, true);
+    irq_set_exclusive_handler(SHELL_UART_IRQ, uart_rx_isr);
+    irq_set_enabled(SHELL_UART_IRQ, true);
 
     SHELL_UART_HW->lcr_h &= ~UART_UARTLCR_H_FEN_BITS;
     SHELL_UART_HW->imsc |= UART_UARTIMSC_RXIM_BITS;

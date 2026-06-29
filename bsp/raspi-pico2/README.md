@@ -1,19 +1,36 @@
 # raspi-pico2
 
-## 当前状态
-最小系统，仅有串口 printf 功能。
+This directory is no longer a standalone CMake entry. It is kept as the Pico2 executable/startup backend while the Zephyr-style board-target build owns board, SoC, sample, and metadata selection.
 
-串口引脚：
-| 引脚 | 引脚号 |
-| ----- | ----- |
+## Serial Wiring
+
+| Signal | Pin |
+| --- | --- |
 | UART0_TX | GP0 |
 | UART0_RX | GP1 |
 | GND | GND |
 
-## Bulid
-首先确保已设置 __PICO_SDK_PATH__
+## Build
+
+Set `PICO_SDK_PATH` first, then configure from the repository root.
+
+M33 domain:
+
+```bash
+cmake -S . -B build-pico2-m33 -G Ninja -DBOARD=pico2/rp2350a/m33 -DPICO_SDK_PATH="$PICO_SDK_PATH"
+cmake --build build-pico2-m33
 ```
-mkdir build && cd build && cmake .. -DPICO_BOARD=pico2 -DCMAKE_BUILD_TYPE=Debug
-make
+
+Hazard3 RISC-V domain:
+
+```bash
+cmake -S . -B build-pico2-hazard3 -G Ninja -DBOARD=pico2/rp2350a/hazard3 -DPICO_SDK_PATH="$PICO_SDK_PATH"
+cmake --build build-pico2-hazard3
 ```
-生成的 uf2 烧录到板子即可。
+
+Both Pico2 domains through sysbuild:
+
+```bash
+cmake -S sysbuild -B build-sys-pico2 -G Ninja -DNERD_DOMAIN_PICO_SDK_PATH="$PICO_SDK_PATH"
+cmake --build build-sys-pico2 --target domains
+```

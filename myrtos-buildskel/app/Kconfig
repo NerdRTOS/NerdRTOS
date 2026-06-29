@@ -1,0 +1,4 @@
+config APP_LOG_LEVEL
+    int "Application log level"
+    default 3
+    range 0 4

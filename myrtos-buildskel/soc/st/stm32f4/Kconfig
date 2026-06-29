@@ -1,0 +1,11 @@
+if SOC_STM32F4
+
+config SOC_NAME
+    string
+    default "stm32f4"
+
+config STM32F4_USE_HAL_DRIVER
+    bool "Use ST HAL driver layer"
+    default y
+
+endif # SOC_STM32F4

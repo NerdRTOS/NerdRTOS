@@ -1,0 +1,15 @@
+config BOARD_PICO2
+    bool
+
+if BOARD_PICO2
+
+config BOARD
+    string
+    default "pico2/rp2350a/m33" if BOARD_PICO2_RP2350A_M33
+    default "pico2/rp2350a/hazard3" if BOARD_PICO2_RP2350A_HAZARD3
+
+config PICO2_FLASH_SIZE_MB
+    int "Onboard flash size (MB)"
+    default 4
+
+endif # BOARD_PICO2

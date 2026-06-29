@@ -1,0 +1,36 @@
+menu "Architecture"
+
+config ARCH_ARM_M3
+    bool "ARM Cortex-M3"
+    help
+        Build NerdRTOS for ARM Cortex-M3 targets. In the new hardware model,
+        this is selected by the SoC/board target.
+
+config ARCH_ARM_M33
+    bool "ARM Cortex-M33"
+    help
+        Build NerdRTOS for ARM Cortex-M33 targets. Kept visible during the
+        migration so existing defconfig files that assign CONFIG_ARCH_ARM_M33
+        remain valid.
+
+config ARCH_ARM_A9
+    bool "ARM Cortex-A9"
+    help
+        Build NerdRTOS for ARM Cortex-A9 targets. In the new hardware model,
+        this is selected by the SoC/board target.
+
+config ARCH_RISCV_RV32
+    bool "RISC-V RV32"
+    help
+        Build NerdRTOS for RISC-V RV32 targets. Kept visible during the
+        migration so existing defconfig files that assign CONFIG_ARCH_RISCV_RV32
+        remain valid.
+
+comment "Legacy architecture defaults"
+
+config LEGACY_DEFAULT_ARM_M33
+    bool
+    default y if BSP_RASPI_PICO2 && !ARCH_RISCV_RV32
+    select ARCH_ARM_M33
+
+endmenu

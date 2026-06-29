@@ -1,0 +1,7 @@
+if SOC_QEMU_CORTEX_A9
+
+config SOC
+    string
+    default "qemu_cortex_a9"
+
+endif # SOC_QEMU_CORTEX_A9

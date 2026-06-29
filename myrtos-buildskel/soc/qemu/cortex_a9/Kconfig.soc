@@ -1,0 +1,4 @@
+config SOC_QEMU_CORTEX_A9
+    bool
+    select ARCH_ARM_CORTEX_A
+    select CPU_HAS_FPU

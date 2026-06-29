@@ -1,0 +1,21 @@
+# 架构层的 symbol 不是给用户选的，是被 soc 层 select 上来的，
+# 所以这里不用 choice，只是声明 bool symbol + 各自的子菜单。
+
+config ARCH_ARM_CORTEX_M
+    bool
+
+config ARCH_ARM_CORTEX_A
+    bool
+
+config ARCH_RISCV
+    bool
+
+# CPU_HAS_FPU 会被多种架构 select（Cortex-M 和 Cortex-A 都可能带 FPU），
+# 所以它的类型声明必须放在不依赖任何具体架构的地方，否则
+# 跨架构 select 会触发 "unmet dependency" 警告。
+config CPU_HAS_FPU
+    bool
+
+source "arch/arm_cortex_m/Kconfig"
+source "arch/arm_cortex_a/Kconfig"
+source "arch/riscv/Kconfig"

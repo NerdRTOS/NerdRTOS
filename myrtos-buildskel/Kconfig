@@ -1,0 +1,23 @@
+mainmenu "MyRTOS Project Configuration"
+
+# 1) 选板子 -> 板子 select 对应 SoC -> SoC select 对应架构
+#    这一条 select 链就是整个平台层的骨架
+source "boards/Kconfig"
+source "soc/Kconfig"
+source "arch/Kconfig"
+
+menu "Kernel"
+
+config NUM_PRIORITIES
+    int "Number of thread priorities"
+    default 32
+    help
+      线程优先级数量，跟具体板子/架构无关，属于内核层配置，
+      所以直接写在顶层 Kconfig 里，不需要下放到 arch/soc/board。
+
+endmenu
+
+menu "Application"
+    # osource: 文件不存在也不报错，方便每个 app 自己决定要不要提供 Kconfig
+    osource "$(APP_DIR)/Kconfig"
+endmenu

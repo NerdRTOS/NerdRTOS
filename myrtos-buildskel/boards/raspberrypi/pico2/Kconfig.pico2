@@ -1,0 +1,9 @@
+config BOARD_PICO2_RP2350A_M33
+    bool "Raspberry Pi Pico 2 (RP2350A, Cortex-M33)"
+    select BOARD_PICO2
+    select SOC_RP2350A_M33
+
+config BOARD_PICO2_RP2350A_HAZARD3
+    bool "Raspberry Pi Pico 2 (RP2350A, Hazard3 RISC-V)"
+    select BOARD_PICO2
+    select SOC_RP2350A_HAZARD3

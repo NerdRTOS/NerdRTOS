@@ -1,0 +1,36 @@
+/dts-v1/;
+
+/ {
+    model = "Raspberry Pi Pico 2 (RP2350A Cortex-M33)";
+    compatible = "raspberrypi,pico2";
+
+    chosen {
+        myrtos,console = &uart0;
+        myrtos,timer = &timer0;
+    };
+
+    memory@20000000 {
+        device_type = "memory";
+        reg = <0x20000000 0x00082000>;
+    };
+
+    flash@10000000 {
+        reg = <0x10000000 0x00400000>;
+    };
+
+    uart0: serial@40070000 {
+        compatible = "raspberrypi,rp2350-uart";
+        reg = <0x40070000 0x1000>;
+        irq = <20>;
+        current-speed = <115200>;
+        status = "okay";
+    };
+
+    timer0: timer@40054000 {
+        compatible = "raspberrypi,rp2350-timer";
+        reg = <0x40054000 0x1000>;
+        irq = <0>;
+        clock-frequency = <150000000>;
+        status = "okay";
+    };
+};

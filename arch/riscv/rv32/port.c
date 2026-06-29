@@ -1,16 +1,28 @@
 #include "nerd.h"
 #include "nd_internal.h"
+#include "csr.h"
 #include "hardware/timer.h"
 #include "hardware/irq.h"
 #include "pico/time.h"
 
 void task_entry_trampoline(void);
+void riscv_trap_init(void);
 
 #define FRAME_TYPE_VOLUNTARY    1U
-#define MSTATUS_MIE             0x8U
 
 volatile nd_uint64_t nd_tick_count = 0;
 static int nd_tick_alarm = -1;
+static nd_bool_t riscv_trap_initialized = ND_FALSE;
+
+void riscv_trap_init_once(void)
+{
+    if (riscv_trap_initialized) {
+        return;
+    }
+
+    riscv_trap_init();
+    riscv_trap_initialized = ND_TRUE;
+}
 
 nd_uint64_t nd_hw_tick_get_current(void)
 {
@@ -34,7 +46,7 @@ __attribute__((aligned(4), noinline, naked))
 void task_entry_trampoline(void)
 {
     __asm__ volatile(
-        "csrsi  mstatus, 8   \n"
+        "csrsi  mstatus, " RISCV_STRINGIFY(RISCV_MSTATUS_MIE_IMM) "\n"
         "mv     a0, s1       \n"
         "mv     a1, s2       \n"
         "jr     s0           \n");
@@ -87,9 +99,8 @@ void *nd_hw_stack_init(void *entry, void *parameter, nd_uint8_t *stack_addr)
     *(--sp) = (nd_uint32_t)entry;     // s1
     *(--sp) = (nd_uint32_t)nd_thread_entry; // s0
     *(--sp) = (nd_uint32_t)task_entry_trampoline;
-    *(--sp) = MSTATUS_MIE;
+    *(--sp) = RISCV_MSTATUS_MIE;
     *(--sp) = FRAME_TYPE_VOLUNTARY;
 
     return (void *)sp;
 }
-

@@ -1,0 +1,16 @@
+if SOC_RP2350
+
+config SOC
+    string
+    default "rp2350a" if SOC_RP2350A
+
+config SOC_CPU_CLUSTER
+    string
+    default "m33" if SOC_RP2350A_M33
+    default "hazard3" if SOC_RP2350A_HAZARD3
+
+config RP2350_DUAL_CORE
+    bool "Enable RP2350 second core support"
+    default y
+
+endif # SOC_RP2350

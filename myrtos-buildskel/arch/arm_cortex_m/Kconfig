@@ -1,0 +1,7 @@
+if ARCH_ARM_CORTEX_M
+
+config ARCH
+    string
+    default "arm_cortex_m"
+
+endif # ARCH_ARM_CORTEX_M

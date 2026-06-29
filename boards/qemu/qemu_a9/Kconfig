@@ -1,0 +1,7 @@
+if BOARD_QEMU_A9
+
+config BOARD
+    string
+    default "qemu_a9/cortex_a9"
+
+endif # BOARD_QEMU_A9

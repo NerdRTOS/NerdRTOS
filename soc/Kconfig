@@ -1,0 +1,10 @@
+# SoC hardware model entry point.
+# Step 1 only adds wrappers. Top-level Kconfig integration happens later.
+
+source "soc/raspberrypi/rp2350/Kconfig.soc"
+source "soc/qemu/cortex_a9/Kconfig.soc"
+source "soc/st/stm32f1/Kconfig.soc"
+
+source "soc/raspberrypi/rp2350/Kconfig"
+source "soc/qemu/cortex_a9/Kconfig"
+source "soc/st/stm32f1/Kconfig"

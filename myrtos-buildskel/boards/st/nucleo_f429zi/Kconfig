@@ -1,0 +1,11 @@
+if BOARD_NUCLEO_F429ZI
+
+config BOARD
+    string
+    default "nucleo_f429zi"
+
+config NUCLEO_USE_EXTERNAL_OSC
+    bool "Use external HSE oscillator"
+    default y
+
+endif # BOARD_NUCLEO_F429ZI

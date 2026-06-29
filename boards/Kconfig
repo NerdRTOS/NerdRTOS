@@ -1,0 +1,34 @@
+# Board hardware model entry point.
+# During migration this is opt-in, so existing BSP defconfigs are not changed
+# implicitly. New board-target defconfigs should set CONFIG_BOARD_TARGET_MODEL=y.
+
+menu "Board Target Hardware Model"
+
+config BOARD_TARGET_MODEL
+    bool "Enable board-target hardware model"
+    default n
+    help
+        Enables the new Zephyr-style board target model. This is opt-in during
+        migration so legacy BSP configs continue to behave as before.
+
+if BOARD_TARGET_MODEL
+
+choice
+    prompt "Board target"
+    default BOARD_PICO2_RP2350A_M33 if BSP_RASPI_PICO2
+    default BOARD_QEMU_A9 if BSP_VEXPRESS_A9_QEMU
+    default BOARD_STM32F103RCT6_M3_ALIENTEK if BSP_STM32F103RCT6
+
+source "boards/raspberrypi/pico2/Kconfig.pico2"
+source "boards/qemu/qemu_a9/Kconfig.qemu_a9"
+source "boards/st/stm32f103rct6_m3_alientek/Kconfig.stm32f103rct6_m3_alientek"
+
+endchoice
+
+source "boards/raspberrypi/pico2/Kconfig"
+source "boards/qemu/qemu_a9/Kconfig"
+source "boards/st/stm32f103rct6_m3_alientek/Kconfig"
+
+endif # BOARD_TARGET_MODEL
+
+endmenu

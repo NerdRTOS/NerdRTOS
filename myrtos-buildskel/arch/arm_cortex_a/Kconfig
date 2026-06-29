@@ -1,0 +1,11 @@
+if ARCH_ARM_CORTEX_A
+
+config ARCH
+    string
+    default "arm_cortex_a"
+
+config MMU
+    bool "Enable MMU support"
+    default y
+
+endif # ARCH_ARM_CORTEX_A

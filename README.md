@@ -21,6 +21,27 @@ The NerdRTOS kernel supports multiple architectures and boards.
 The full list of supported targets can be found in the
 [`arch/`](arch/) and [`bsp/`](bsp/) directories.
 
+
+## Building Pico2
+
+Pico2 uses explicit Zephyr-style board targets. The retired `BUILD_CONFIG=pico2` and standalone `bsp/raspi-pico2` CMake entry should not be used for new builds.
+
+Set `PICO_SDK_PATH` first, then build one domain explicitly:
+
+```bash
+cmake -S . -B build-pico2-m33 -G Ninja -DBOARD=pico2/rp2350a/m33 -DPICO_SDK_PATH="$PICO_SDK_PATH"
+cmake --build build-pico2-m33
+
+cmake -S . -B build-pico2-hazard3 -G Ninja -DBOARD=pico2/rp2350a/hazard3 -DPICO_SDK_PATH="$PICO_SDK_PATH"
+cmake --build build-pico2-hazard3
+```
+
+To build both Pico2 domains through sysbuild:
+
+```bash
+cmake -S sysbuild -B build-sys-pico2 -G Ninja -DNERD_DOMAIN_PICO_SDK_PATH="$PICO_SDK_PATH"
+cmake --build build-sys-pico2 --target domains
+```
 ## Licensing
 
 NerdRTOS is released under the [MIT License](LICENSE)

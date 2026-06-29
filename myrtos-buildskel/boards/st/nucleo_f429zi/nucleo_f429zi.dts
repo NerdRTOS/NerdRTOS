@@ -1,0 +1,36 @@
+/dts-v1/;
+
+/ {
+    model = "ST Nucleo-F429ZI";
+    compatible = "st,nucleo-f429zi";
+
+    chosen {
+        myrtos,console = &uart3;
+        myrtos,timer = &systick;
+    };
+
+    memory@20000000 {
+        device_type = "memory";
+        reg = <0x20000000 0x00030000>;
+    };
+
+    flash@08000000 {
+        reg = <0x08000000 0x00200000>;
+    };
+
+    uart3: serial@40004800 {
+        compatible = "st,stm32-uart";
+        reg = <0x40004800 0x400>;
+        irq = <39>;
+        current-speed = <115200>;
+        status = "okay";
+    };
+
+    systick: timer@e000e010 {
+        compatible = "arm,cortex-m-systick";
+        reg = <0xE000E010 0x10>;
+        irq = <15>;
+        clock-frequency = <180000000>;
+        status = "okay";
+    };
+};

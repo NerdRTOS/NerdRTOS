@@ -1,0 +1,36 @@
+/dts-v1/;
+
+/ {
+    model = "QEMU ARM Cortex-A9 vexpress";
+    compatible = "qemu,cortex-a9";
+
+    chosen {
+        myrtos,console = &uart0;
+        myrtos,timer = &timer0;
+    };
+
+    memory@60000000 {
+        device_type = "memory";
+        reg = <0x60000000 0x08000000>;
+    };
+
+    flash@00000000 {
+        reg = <0x00000000 0x04000000>;
+    };
+
+    uart0: serial@10009000 {
+        compatible = "arm,pl011";
+        reg = <0x10009000 0x1000>;
+        irq = <37>;
+        current-speed = <115200>;
+        status = "okay";
+    };
+
+    timer0: timer@10011000 {
+        compatible = "arm,sp804";
+        reg = <0x10011000 0x1000>;
+        irq = <34>;
+        clock-frequency = <24000000>;
+        status = "okay";
+    };
+};

@@ -1,0 +1,16 @@
+# SoC 层：每个 SoC 用 select 把自己挂到对应架构上。
+# Kconfig.soc   定义 SOC_XXX symbol 本身 + select 架构
+# Kconfig       SoC 专属可见配置项
+# Kconfig.defconfig  SoC 对其它通用 symbol 的默认值覆盖
+
+source "soc/raspberrypi/rp2350/Kconfig.soc"
+source "soc/qemu/cortex_a9/Kconfig.soc"
+source "soc/st/stm32f4/Kconfig.soc"
+
+source "soc/raspberrypi/rp2350/Kconfig"
+source "soc/qemu/cortex_a9/Kconfig"
+source "soc/st/stm32f4/Kconfig"
+
+source "soc/raspberrypi/rp2350/Kconfig.defconfig"
+source "soc/qemu/cortex_a9/Kconfig.defconfig"
+source "soc/st/stm32f4/Kconfig.defconfig"
