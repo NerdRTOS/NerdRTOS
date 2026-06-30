@@ -22,8 +22,20 @@ endif()
 
 set(NERD_BOARD_HINT ${BOARD})
 if("${NERD_BOARD_HINT}" STREQUAL "qemu_a9"
-   OR "${NERD_BOARD_HINT}" MATCHES "^qemu_a9/"
-   OR "${NERD_BOARD_HINT}" STREQUAL "stm32f103rct6"
+   OR "${NERD_BOARD_HINT}" MATCHES "^qemu_a9/")
+    set(NERD_NEEDS_PICO_SDK FALSE)
+    set(CMAKE_SYSTEM_NAME Generic)
+    set(CMAKE_SYSTEM_PROCESSOR arm)
+    if(NOT CMAKE_C_COMPILER)
+        set(CMAKE_C_COMPILER arm-none-eabi-gcc)
+    endif()
+    if(NOT CMAKE_ASM_COMPILER)
+        set(CMAKE_ASM_COMPILER arm-none-eabi-gcc)
+    endif()
+    if(NOT CMAKE_OBJCOPY)
+        set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
+    endif()
+elseif("${NERD_BOARD_HINT}" STREQUAL "stm32f103rct6"
    OR "${NERD_BOARD_HINT}" MATCHES "^stm32f103rct6/")
     set(NERD_NEEDS_PICO_SDK FALSE)
 elseif("${NERD_BOARD_HINT}" STREQUAL "pico2"
@@ -35,12 +47,21 @@ if(NERD_NEEDS_PICO_SDK)
 endif()
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-project(nerd C CXX ASM)
+if(NERD_NEEDS_PICO_SDK)
+    project(nerd C CXX ASM)
+else()
+    project(nerd C ASM)
+endif()
 
 set(PROJECT_ROOT                ${CMAKE_SOURCE_DIR})
 list(APPEND CMAKE_MODULE_PATH   ${PROJECT_ROOT}/cmake)
 if(NOT NERD_SAMPLE_DIR)
-    set(NERD_SAMPLE_DIR ${PROJECT_ROOT}/samples/pico_shell)
+    if("${NERD_BOARD_HINT}" STREQUAL "qemu_a9"
+       OR "${NERD_BOARD_HINT}" MATCHES "^qemu_a9/")
+        set(NERD_SAMPLE_DIR ${PROJECT_ROOT}/samples/qemu_shell)
+    else()
+        set(NERD_SAMPLE_DIR ${PROJECT_ROOT}/samples/pico_shell)
+    endif()
 endif()
 include(kconfig)
 

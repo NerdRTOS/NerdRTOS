@@ -854,6 +854,271 @@ arch/arm/m3 -> arch/arm/cortex_m/m3 later, when STM32 migration starts
 ```
 
 Rationale: Pico2 M33 has already passed board-target and sysbuild validation, so it is safe to move the M33 implementation now. A9 and M3 still have standalone BSP dependencies and should remain in their old paths until their board-target migrations are active.
+
+## Step 11: QEMU A9 Migration Plan
+
+Status: in progress. A9 Step1 through Step7B are complete: the Cortex-A wrapper exports Cortex-A9 arch metadata, the QEMU Cortex-A9 SoC wrapper now owns copied GIC sources, the QEMU A9 board wrapper now owns copied PL011 shell and linker script files, the QEMU shell sample now owns copied A9 `app.c/app.h` sources, the A9 BSP CMake file now acts as an executable backend for the board-target path, the QEMU A9 board-target flow has configured, built, run in QEMU, and validated shell input/output, stale A9 BSP duplicate files have been deleted, and Cortex-A9 arch files now live under `arch/arm/cortex_a/a9`. `main.c` remains intentionally deferred.
+
+Current standalone BSP:
+
+```text
+bsp/vexpress-a9-qemu/
+  app.c
+  app.h
+  main.c
+  shell_port.c
+  gic.c
+  gic.h
+  link.ld
+  nd_config.h
+  CMakeLists.txt
+```
+
+Existing Zephyr-style skeleton:
+
+```text
+boards/qemu/qemu_a9/
+  CMakeLists.txt
+  Kconfig
+  Kconfig.qemu_a9
+  qemu_a9.dts
+  qemu_a9_defconfig
+  README.md
+
+soc/qemu/cortex_a9/
+  CMakeLists.txt
+  Kconfig
+  Kconfig.soc
+
+arch/arm/cortex_a/
+  CMakeLists.txt
+  README.md
+```
+
+QEMU A9 ownership plan:
+
+| Current file | Target owner | Target path | Notes |
+| --- | --- | --- | --- |
+| `bsp/vexpress-a9-qemu/app.c` | sample | `samples/qemu_shell/src/app.c` initially | Cannot directly reuse `samples/pico_shell` yet because its `app.h` includes Pico SDK headers. Later both samples can be unified. |
+| `bsp/vexpress-a9-qemu/app.h` | sample | `samples/qemu_shell/include/app.h` initially | Keep QEMU sample independent until sample headers become board-neutral. |
+| `bsp/vexpress-a9-qemu/shell_port.c` | board | `boards/qemu/qemu_a9/shell_port.c` | PL011 UART console is board-visible hardware selected by DTS `chosen` console. Later consume generated console metadata. |
+| `bsp/vexpress-a9-qemu/gic.c` | SoC | `soc/qemu/cortex_a9/gic.c` | GIC is interrupt-controller/SoC integration, not board application code. |
+| `bsp/vexpress-a9-qemu/gic.h` | SoC | `soc/qemu/cortex_a9/gic.h` | Include directory should be exported by the SoC wrapper. |
+| `bsp/vexpress-a9-qemu/link.ld` | board first | `boards/qemu/qemu_a9/link.ld` | Start board-owned, then split MEMORY from DTS into generated linker fragment like Pico2. |
+| `bsp/vexpress-a9-qemu/main.c` | deferred board startup | keep in BSP initially | Same policy as Pico2: move `main.c` last after startup ownership is clear across A9 and STM32. |
+| `bsp/vexpress-a9-qemu/nd_config.h` | deferred config compatibility | keep in BSP initially | Later replace with generated `autoconf.h`/shared config include strategy. |
+| `arch/arm/a9/*` | arch | `arch/arm/cortex_a/a9/*` | Completed in A9 Step7B after QEMU board-target build/run validation. |
+
+
+A9 Step1 completed:
+
+```text
+arch/arm/cortex_a/CMakeLists.txt
+  -> NERD_ARCH_LAYER=cortex_a
+  -> NERD_ARCH_CPU=cortex-a9
+  -> NERD_ARCH_INSTRUCTION_SET=arm
+  -> NERD_ARCH_EXPECTED_COMPILE_OPTIONS=-mcpu=cortex-a9;-marm
+  -> NERD_ARCH_SOURCES=arch/arm/cortex_a/a9/startup.S;context.S;port.c;timer.c
+  -> NERD_ARCH_INCLUDE_DIRS=arch/arm/cortex_a/a9
+```
+
+Step1 originally wrapped old paths only. The physical move was completed later in Step7B after the A9 board-target path built and ran in QEMU.
+
+A9 Step2 completed:
+
+```text
+bsp/vexpress-a9-qemu/gic.c -> soc/qemu/cortex_a9/gic.c
+bsp/vexpress-a9-qemu/gic.h -> soc/qemu/cortex_a9/gic.h
+
+soc/qemu/cortex_a9/CMakeLists.txt
+  -> NERD_SOC_LEGACY_BSP_DIR=${PROJECT_ROOT}/bsp/vexpress-a9-qemu
+  -> NERD_SOC_SOURCES=${CMAKE_CURRENT_LIST_DIR}/gic.c
+  -> NERD_SOC_INCLUDE_DIRS=${CMAKE_CURRENT_LIST_DIR}
+```
+
+The original BSP copies are intentionally retained until `BOARD=qemu_a9/cortex_a9` builds and runs.
+
+A9 Step3 completed:
+
+```text
+bsp/vexpress-a9-qemu/shell_port.c -> boards/qemu/qemu_a9/shell_port.c
+bsp/vexpress-a9-qemu/link.ld      -> boards/qemu/qemu_a9/link.ld
+
+boards/qemu/qemu_a9/CMakeLists.txt
+  -> NERD_BOARD_LEGACY_DIR=${PROJECT_ROOT}/bsp/vexpress-a9-qemu
+  -> NERD_BOARD_SOURCES=${CMAKE_CURRENT_LIST_DIR}/shell_port.c
+  -> NERD_BOARD_INCLUDE_DIRS=${CMAKE_CURRENT_LIST_DIR}
+  -> NERD_LINKER_SCRIPT=${CMAKE_CURRENT_LIST_DIR}/link.ld
+  -> NERD_STARTUP_BACKEND=legacy_bsp
+  -> NERD_STARTUP_OWNER=board
+  -> NERD_ENTRY_SOURCE=${NERD_BOARD_LEGACY_DIR}/main.c
+```
+
+The original BSP `shell_port.c` and `link.ld` are intentionally retained until `BOARD=qemu_a9/cortex_a9` builds and runs. `main.c` still stays in the legacy BSP path and is selected through `NERD_ENTRY_SOURCE`, matching the Pico2 deferred startup policy.
+
+A9 Step4 completed:
+
+```text
+bsp/vexpress-a9-qemu/app.c -> samples/qemu_shell/src/app.c
+bsp/vexpress-a9-qemu/app.h -> samples/qemu_shell/include/app.h
+
+samples/qemu_shell/CMakeLists.txt
+  -> NERD_SAMPLE_SOURCES=${CMAKE_CURRENT_LIST_DIR}/src/app.c
+  -> NERD_SAMPLE_INCLUDE_DIRS=${CMAKE_CURRENT_LIST_DIR}/include
+
+CMakeLists.txt / cmake/kconfig.cmake
+  -> BOARD=qemu_a9/cortex_a9 defaults to samples/qemu_shell
+  -> Pico2 targets keep samples/pico_shell
+  -> manually supplied -DNERD_SAMPLE_DIR=... still overrides the default
+```
+
+The QEMU sample is intentionally separate from `samples/pico_shell` for now because the Pico sample header still includes Pico SDK headers. The original BSP `app.c/app.h` and the old `samples/pico_shell/boards/qemu_a9.conf` compatibility fragment are retained until A9 board-target build validation.
+
+A9 Step5 completed:
+
+```text
+bsp/vexpress-a9-qemu/CMakeLists.txt
+  -> no longer re-enters project() when included by the top-level board build
+  -> consumes NERD_ENTRY_SOURCE
+  -> consumes NERD_SAMPLE_SOURCES / NERD_SAMPLE_INCLUDE_DIRS
+  -> consumes NERD_BOARD_SOURCES / NERD_BOARD_INCLUDE_DIRS
+  -> consumes NERD_SOC_SOURCES / NERD_SOC_INCLUDE_DIRS
+  -> consumes NERD_ARCH_SOURCES / NERD_ARCH_INCLUDE_DIRS
+  -> consumes NERD_LINKER_SCRIPT
+  -> keeps run/debug QEMU helper targets
+
+CMakeLists.txt
+  -> BOARD=qemu_a9/cortex_a9 selects arm-none-eabi toolchain metadata before project()
+  -> QEMU A9 enables only C and ASM project languages; it does not require arm-none-eabi-g++
+```
+
+The standalone `bsp/vexpress-a9-qemu` entry still has a compatibility path, but the intended path is now the repository root with `-DBOARD=qemu_a9/cortex_a9`.
+
+A9 Step6 completed:
+
+```text
+cmake -S . -B build-qemu-a9 -G Ninja -DBOARD=qemu_a9/cortex_a9
+cmake --build build-qemu-a9
+cmake --build build-qemu-a9 --target run
+```
+
+Validation passed on Linux with `arm-none-eabi-gcc` and `qemu-system-arm` installed:
+
+```text
+configure: pass
+build: pass
+QEMU run: pass
+shell prompt: pass
+serial input/output: pass
+shell commands: pass
+```
+
+The QEMU pulseaudio warnings observed during run are host audio backend warnings and do not affect the RTOS serial console.
+
+A9 Step7 cleanup plan:
+
+| Legacy file | New owner | Cleanup decision |
+| --- | --- | --- |
+| `bsp/vexpress-a9-qemu/app.c` | `samples/qemu_shell/src/app.c` | Safe to delete after one final source-reference check. |
+| `bsp/vexpress-a9-qemu/app.h` | `samples/qemu_shell/include/app.h` | Safe to delete after one final source-reference check. |
+| `bsp/vexpress-a9-qemu/shell_port.c` | `boards/qemu/qemu_a9/shell_port.c` | Safe to delete after one final source-reference check. |
+| `bsp/vexpress-a9-qemu/gic.c` | `soc/qemu/cortex_a9/gic.c` | Safe to delete after one final source-reference check. |
+| `bsp/vexpress-a9-qemu/gic.h` | `soc/qemu/cortex_a9/gic.h` | Safe to delete after one final source-reference check. |
+| `bsp/vexpress-a9-qemu/link.ld` | `boards/qemu/qemu_a9/link.ld` | Safe to delete after one final source-reference check. |
+| `bsp/vexpress-a9-qemu/main.c` | deferred startup | Keep. Move only after startup ownership is finalized across Pico2, A9, and STM32. |
+| `bsp/vexpress-a9-qemu/nd_config.h` | deferred config compatibility | Keep for now. Replace only after config include policy is unified. |
+| `bsp/vexpress-a9-qemu/CMakeLists.txt` | executable backend | Keep. It is still the A9 backend used by the board-target flow. |
+| `arch/arm/a9/*` | `arch/arm/cortex_a/a9/*` later | Move after stale BSP duplicate cleanup, then rerun QEMU validation. |
+
+A9 Step7A completed:
+
+```text
+removed from bsp/vexpress-a9-qemu/:
+  app.c
+  app.h
+  shell_port.c
+  gic.c
+  gic.h
+  link.ld
+
+kept in bsp/vexpress-a9-qemu/:
+  CMakeLists.txt
+  main.c
+  nd_config.h
+```
+
+The standalone `bsp/vexpress-a9-qemu` CMake entry is retired so it does not reference deleted duplicate files. The root board-target path remains active:
+
+```bash
+cmake -S . -B build-qemu-a9 -G Ninja -DBOARD=qemu_a9/cortex_a9
+```
+
+A9 Step7B completed:
+
+```text
+arch/arm/a9/context.S -> arch/arm/cortex_a/a9/context.S
+arch/arm/a9/port.c    -> arch/arm/cortex_a/a9/port.c
+arch/arm/a9/ptimer.h  -> arch/arm/cortex_a/a9/ptimer.h
+arch/arm/a9/startup.S -> arch/arm/cortex_a/a9/startup.S
+arch/arm/a9/timer.c   -> arch/arm/cortex_a/a9/timer.c
+
+arch/arm/cortex_a/CMakeLists.txt
+  -> NERD_ARCH_SOURCES=${CMAKE_CURRENT_LIST_DIR}/a9/startup.S;context.S;port.c;timer.c
+  -> NERD_ARCH_INCLUDE_DIRS=${CMAKE_CURRENT_LIST_DIR}/a9
+```
+
+After this step, `arch/arm/a9` is removed. Re-run the QEMU A9 configure/build/run checks before cleaning any more A9 startup files.
+
+A9 Step7B validation completed:
+
+```text
+cmake -S . -B build-qemu-a9 -G Ninja -DBOARD=qemu_a9/cortex_a9
+cmake --build build-qemu-a9
+cmake --build build-qemu-a9 --target run
+```
+
+Validation passed on Linux after the arch move:
+
+```text
+configure: pass
+build: pass
+QEMU run: pass
+serial input/output: pass
+shell commands: pass
+```
+
+Remaining A9 deferred files:
+
+```text
+bsp/vexpress-a9-qemu/main.c      -> defer physical move until startup ownership policy is settled
+bsp/vexpress-a9-qemu/nd_config.h -> defer until config include compatibility is unified
+bsp/vexpress-a9-qemu/CMakeLists.txt -> keep as the current executable backend
+```
+Recommended QEMU A9 execution order:
+
+1. A9 Step1: completed. `arch/arm/cortex_a/CMakeLists.txt` exports Cortex-A9 arch metadata.
+2. A9 Step2: completed. `gic.c/gic.h` are copied into `soc/qemu/cortex_a9/`, and the SoC wrapper exports `NERD_SOC_SOURCES` / `NERD_SOC_INCLUDE_DIRS` while legacy BSP copies remain for now.
+3. A9 Step3: completed. `shell_port.c` and `link.ld` are copied into `boards/qemu/qemu_a9/`, and the board wrapper exports board/linker/startup metadata while legacy BSP copies remain.
+4. A9 Step4: completed. `samples/qemu_shell` now owns copied A9 `app.c/app.h`, and `BOARD=qemu_a9/cortex_a9` defaults to that sample instead of `samples/pico_shell`.
+5. A9 Step5: completed. `bsp/vexpress-a9-qemu/CMakeLists.txt` is now the A9 executable backend and consumes arch/soc/board/sample variables while keeping `main.c` as `NERD_ENTRY_SOURCE`.
+6. A9 Step6: completed. `BOARD=qemu_a9/cortex_a9` configures, builds, runs in QEMU, and validates shell serial input/output and commands.
+7. A9 Step7A: completed. Stale A9 BSP duplicate files are deleted, while `main.c`, `nd_config.h`, and backend `CMakeLists.txt` remain.
+8. A9 Step7B: completed. `arch/arm/a9` has moved into `arch/arm/cortex_a/a9`.
+
+Initial validation commands:
+
+```bash
+cmake -S . -B build-qemu-a9 -G Ninja -DBOARD=qemu_a9/cortex_a9
+cmake --build build-qemu-a9
+cmake --build build-qemu-a9 --target run
+```
+
+Deferred until A9 is stable:
+
+```text
+bsp/vexpress-a9-qemu/main.c -> boards/qemu/qemu_a9/main.c
+arch/arm/a9/*               -> arch/arm/cortex_a/a9/* completed
+```
 ## Step 10: Main-tree Verification Matrix
 
 Each step should update this matrix.
@@ -862,9 +1127,99 @@ Each step should update this matrix.
 | --- | --- | --- | --- | --- |
 | pico2/rp2350a/m33 | pass with real Pico SDK | pass | pass | primary Pico 2 ARM target; flashed and shell validated |
 | pico2/rp2350a/hazard3 | pass with real Pico SDK | pass | pass | Pico 2 RISC-V target; `PICO_PLATFORM=rp2350-riscv`; flashed and shell validated |
-| qemu_a9/cortex_a9 | partial: Kconfig + DTS pass, toolchain missing | pending | pending | deferred until Pico2 is complete |
+| qemu_a9/cortex_a9 | pass with real arm-none-eabi toolchain | pass | pass | QEMU run, shell prompt, serial input/output, and commands validated |
 | stm32f103rct6/m3 | partial: Kconfig + DTS pass, toolchain missing | pending | pending | deferred until Pico2 is complete |
 
 ## Immediate Next Action
 
-Continue Pico2 first. Step8 sysbuild/domain is complete for Pico2 M33 and Hazard3 with real build validation. The next concrete task is final Pico2 Step9 verification: run M33, Hazard3, sysbuild, and the retired legacy command check once more. After that, move on to the next board family; the physical `main.c` move remains deferred until startup ownership is finalized across Pico2, QEMU A9, and STM32.
+Pico2 has reached a stable board-target/sysbuild milestone, and QEMU A9 now configures, builds, runs, validates shell serial I/O through the board-target path, cleans stale BSP duplicates, and owns Cortex-A9 files under `arch/arm/cortex_a/a9`. STM32 migration has started with Step0 and Step1.
+
+## Step 12: STM32F103 M3 Migration Plan
+
+Status: in progress. STM32 Step0 confirms the current BSP tree does not contain the CMSIS and STM32F1 HAL source trees that the old standalone CMake files reference. STM32 Step1 is complete as a wrapper-only arch step: `arch/arm/cortex_m/CMakeLists.txt` now supports `CONFIG_ARCH_ARM_M3` and exports the existing `arch/arm/m3` sources without moving them.
+
+Current standalone BSP:
+
+```text
+bsp/stm32f103rct6-m3-alientek/
+  CMakeLists.txt
+  openocd.cfg
+  stm32f103rct6.ld
+  toolchain-arm-none-eabi.cmake
+  Drivers/
+    CMakeLists.txt
+    BSP/led/led.c
+    BSP/led/led.h
+    BSP/usart/usart.c
+    BSP/usart/usart.h
+  Users/
+    app.c
+    app.h
+    main.c
+    nd_config.h
+    shell_port.c
+    stm32f1xx_hal_conf.h
+```
+
+Missing external/vendor inputs at Step0:
+
+```text
+bsp/stm32f103rct6-m3-alientek/Drivers/CMSIS/
+bsp/stm32f103rct6-m3-alientek/Drivers/STM32F1xx_HAL_Driver/
+```
+
+The existing `Users/CMakeLists.txt` references those paths for `startup_stm32f103xe.s`, `system_stm32f1xx.c`, HAL sources, and HAL headers. Board-target configure can proceed without them, but full STM32 compile/link will require either restoring those vendor trees or replacing the HAL dependency.
+
+STM32 ownership plan:
+
+| Current file | Target owner | Target path | Notes |
+| --- | --- | --- | --- |
+| `Users/app.c` | sample | `samples/stm32_shell/src/app.c` | Keeps LED blink + shell task initially. |
+| `Users/app.h` | sample | `samples/stm32_shell/include/app.h` | Keep STM32 sample independent until app headers are board-neutral. |
+| `Drivers/BSP/led/led.c` | board | `boards/st/stm32f103rct6_m3_alientek/led.c` | Board LED API used by sample. |
+| `Drivers/BSP/led/led.h` | board | `boards/st/stm32f103rct6_m3_alientek/led.h` | Board include path exported by board wrapper. |
+| `Drivers/BSP/usart/usart.c` | board | `boards/st/stm32f103rct6_m3_alientek/usart.c` | Board console transport. |
+| `Drivers/BSP/usart/usart.h` | board | `boards/st/stm32f103rct6_m3_alientek/usart.h` | Board include path exported by board wrapper. |
+| `Users/shell_port.c` | board | `boards/st/stm32f103rct6_m3_alientek/shell_port.c` | Shell backend over USART1. |
+| `stm32f103rct6.ld` | board first | `boards/st/stm32f103rct6_m3_alientek/stm32f103rct6.ld` | Later split MEMORY from DTS like Pico2. |
+| `Users/main.c` | deferred board startup | keep in BSP initially | Same policy as Pico2 and A9: move `main.c` last. |
+| `Users/nd_config.h` | deferred config compatibility | keep in BSP initially | Later replace with generated `autoconf.h`/shared config include strategy. |
+| `Users/stm32f1xx_hal_conf.h` | HAL config compatibility | keep in BSP initially | Needed by STM32 HAL until HAL include policy is finalized. |
+| `arch/arm/m3/*` | arch | `arch/arm/cortex_m/m3/*` later | First wrap old paths, move only after board-target build is stable. |
+
+STM32 Step0 completed:
+
+```text
+Drivers/BSP/led      present
+Drivers/BSP/usart    present
+Drivers/CMSIS        missing
+Drivers/STM32F1xx_HAL_Driver missing
+```
+
+STM32 Step1 completed:
+
+```text
+arch/arm/cortex_m/CMakeLists.txt
+  -> CONFIG_ARCH_ARM_M3 supported
+  -> NERD_ARCH_LAYER=cortex_m
+  -> NERD_ARCH_CPU=cortex-m3
+  -> NERD_ARCH_INSTRUCTION_SET=thumb
+  -> NERD_ARCH_EXPECTED_COMPILE_OPTIONS=-mcpu=cortex-m3;-mthumb
+  -> NERD_ARCH_SOURCES=arch/arm/m3/context.S;port.c;hardfault.c;systick.c
+```
+
+No files are moved in Step1. The old `arch/arm/m3` directory remains the implementation location until the STM32 board-target build is stable.
+
+Recommended STM32 execution order:
+
+1. STM32 Step0: completed. Confirm HAL/CMSIS vendor trees are missing from the current BSP and record this as a full-build prerequisite.
+2. STM32 Step1: completed. Add Cortex-M3 support to the Cortex-M wrapper using existing `arch/arm/m3` sources.
+3. STM32 Step2: create `samples/stm32_shell` from `Users/app.c/app.h`.
+4. STM32 Step3: split LED, USART, shell port, and linker script into `boards/st/stm32f103rct6_m3_alientek/`.
+5. STM32 Step4: wire STM32F1 SoC/HAL/CMSIS sources and include directories. This requires restoring or replacing missing vendor trees.
+6. STM32 Step5: adapt `bsp/stm32f103rct6-m3-alientek/CMakeLists.txt` into a board-target executable backend.
+7. STM32 Step6: build `BOARD=stm32f103rct6/m3`.
+8. STM32 Step7: flash/run on hardware and validate serial shell and LED blink.
+9. STM32 Step8: clean stale BSP duplicates and later move `arch/arm/m3` into `arch/arm/cortex_m/m3`.
+
+Immediate next action: run a configure-only check for `BOARD=stm32f103rct6/m3` and confirm the generated metadata records `ARCH_CPU=cortex-m3`, then proceed to STM32 Step2.
