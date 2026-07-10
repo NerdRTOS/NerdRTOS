@@ -1,5 +1,3 @@
-#include "nerd.h"
-#include "nd_config.h"
 #include "nd_internal.h"
 
 /*
