@@ -5,5 +5,8 @@ notes/
 bsp/stm32f103rct6-m3-alientek/Drivers/CMSIS/
 bsp/stm32f103rct6-m3-alientek/Drivers/STM32F1xx_HAL_Driver/
 bsp/stm32f103rct6-m3-alientek/Outputs/
+bsp/NUCLEO-H753ZI/Drivers/CMSIS/
+bsp/NUCLEO-H753ZI/Drivers/STM32H7xx_HAL_Driver/
+bsp/NUCLEO-H753ZI/Outputs/
 CLAUDE.md
 .gitignore
