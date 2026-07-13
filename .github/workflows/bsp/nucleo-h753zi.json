@@ -1,0 +1,11 @@
+{
+  "id": "nucleo-h753zi",
+  "source_dir": "bsp/NUCLEO-H753ZI",
+  "build_dir": "build/NUCLEO-H753ZI",
+  "cmake_args": "-DCMAKE_BUILD_TYPE=Debug",
+  "needs_pico_sdk": false,
+  "run_qemu": false,
+  "stm32_cube": "STM32CubeH7",
+  "stm32_cube_ref": "v1.13.0",
+  "stm32_series": "STM32H7xx"
+}

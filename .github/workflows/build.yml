@@ -103,6 +103,24 @@ jobs:
           git clone https://github.com/raspberrypi/pico-sdk.git --depth 1
           cd pico-sdk && git submodule update --init
 
+      - name: Cache STM32 vendor drivers
+        if: matrix.stm32_cube
+        id: cache-stm32
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ matrix.source_dir }}/Drivers/CMSIS
+            ${{ matrix.source_dir }}/Drivers/${{ matrix.stm32_series }}_HAL_Driver
+          key: ${{ matrix.stm32_cube }}-${{ matrix.stm32_cube_ref }}
+
+      - name: Get STM32 vendor drivers
+        if: matrix.stm32_cube && steps.cache-stm32.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch "${{ matrix.stm32_cube_ref }}" "https://github.com/STMicroelectronics/${{ matrix.stm32_cube }}.git" stm32cube
+          git -C stm32cube submodule update --init --depth 1 "Drivers/CMSIS/Device/ST/${{ matrix.stm32_series }}" "Drivers/${{ matrix.stm32_series }}_HAL_Driver"
+          cp -r stm32cube/Drivers/CMSIS "${{ matrix.source_dir }}/Drivers/"
+          cp -r "stm32cube/Drivers/${{ matrix.stm32_series }}_HAL_Driver" "${{ matrix.source_dir }}/Drivers/"
+
       - name: Install QEMU
         if: matrix.run_qemu
         run: |
