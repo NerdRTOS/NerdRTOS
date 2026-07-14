@@ -61,6 +61,8 @@ static void nd_thread_pend_timeout(void *arg)
 
     nd_list_remove(&thread->qnode);
     nd_thread_ready_add_tail(thread);
+
+    nd_scheduler();
 }
 
 nd_uint32_t nd_thread_stack_used(nd_thread_t *thread)
