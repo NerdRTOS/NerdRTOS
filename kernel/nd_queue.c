@@ -9,6 +9,7 @@ nd_err_t nd_queue_init(nd_queue_t *queue, char *buf, nd_uint32_t msg_size, nd_ui
     nd_kernel_lock();
 
     if ((max_msgs & (max_msgs-1)) != 0 || max_msgs < 1) {
+        nd_kernel_unlock();
         return ND_EINVAL;
     }
 
