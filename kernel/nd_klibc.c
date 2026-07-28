@@ -267,15 +267,143 @@ nd_size_t nd_strlen(const char *s)
     return sc - s;
 }
 
-void *nd_memcpy(void *dest, const void *src, size_t count)
+void *nd_memcpy(void *dest, const void *src, size_t n)
 {
-    char *tmp = dest;
+    char *d = dest;
     const char *s = src;
 
-    while (count--) {
-        *tmp++ = *s++;
+#ifndef __GNUC__
+    for (; n; n--) *d++ = *s++;
+    return dest;
+#endif
+
+    nd_uint32_t x, y;
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define LS >>
+#define RS <<
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define LS <<
+#define RS >>
+#else
+#error "unsupported byte order"
+#endif
+
+    typedef nd_uint32_t __attribute__((__may_alias__)) nd_alias_u32_t;
+
+    for (; (nd_uintptr_t)s % 4 && n != 0; n--) {
+        *d++ = *s++;
     }
 
+    if ((nd_uintptr_t)d % 4 == 0) {
+        for (; n >= 16; s += 16, d += 16, n -= 16) {
+            *(nd_alias_u32_t *)(d + 0) = *(const nd_alias_u32_t *)(s + 0);
+            *(nd_alias_u32_t *)(d + 4) = *(const nd_alias_u32_t *)(s + 4);
+            *(nd_alias_u32_t *)(d + 8) = *(const nd_alias_u32_t *)(s + 8);
+            *(nd_alias_u32_t *)(d + 12) = *(const nd_alias_u32_t *)(s + 12);
+        }
+
+        if (n & 8) {
+            *(nd_alias_u32_t *)(d + 0) = *(const nd_alias_u32_t *)(s + 0);
+            *(nd_alias_u32_t *)(d + 4) = *(const nd_alias_u32_t *)(s + 4);
+            d += 8;
+            s += 8;
+        }
+
+        if (n & 4) {
+            *(nd_alias_u32_t *)(d + 0) = *(const nd_alias_u32_t *)(s + 0);
+            d += 4;
+            s += 4;
+        }
+
+        if (n & 2) {
+            *d++ = *s++;
+            *d++ = *s++;
+        }
+        if (n & 1) {
+            *d = *s;
+        }
+
+        return dest;
+    }
+
+    if (n >= 32)
+        switch ((nd_uintptr_t)d % 4) {
+        case 1:
+            x = *(const nd_alias_u32_t *)s;
+            *d++ = *s++;
+            *d++ = *s++;
+            *d++ = *s++;
+
+            n -= 3;
+
+            for (; n >= 17; s += 16, d += 16, n -= 16) {
+                y = *(const nd_alias_u32_t *)(s + 1);
+                *(nd_alias_u32_t *)(d + 0) = (x LS 24) | (y RS 8);
+                x = *(const nd_alias_u32_t *)(s + 5);
+                *(nd_alias_u32_t *)(d + 4) = (y LS 24) | (x RS 8);
+                y = *(const nd_alias_u32_t *)(s + 9);
+                *(nd_alias_u32_t *)(d + 8) = (x LS 24) | (y RS 8);
+                x = *(const nd_alias_u32_t *)(s + 13);
+                *(nd_alias_u32_t *)(d + 12) = (y LS 24) | (x RS 8);
+            }
+            break;
+        case 2:
+            x = *(const nd_alias_u32_t *)s;
+            *d++ = *s++;
+            *d++ = *s++;
+
+            n -= 2;
+
+            for (; n >= 18; s += 16, d += 16, n -= 16) {
+                y = *(const nd_alias_u32_t *)(s + 2);
+                *(nd_alias_u32_t *)(d + 0) = (x LS 16) | (y RS 16);
+                x = *(const nd_alias_u32_t *)(s + 6);
+                *(nd_alias_u32_t *)(d + 4) = (y LS 16) | (x RS 16);
+                y = *(const nd_alias_u32_t *)(s + 10);
+                *(nd_alias_u32_t *)(d + 8) = (x LS 16) | (y RS 16);
+                x = *(const nd_alias_u32_t *)(s + 14);
+                *(nd_alias_u32_t *)(d + 12) = (y LS 16) | (x RS 16);
+            }
+            break;
+        case 3:
+            x = *(const nd_alias_u32_t *)s;
+            *d++ = *s++;
+
+            n -= 1;
+
+            for (; n >= 19; s += 16, d += 16, n -= 16) {
+                y = *(const nd_alias_u32_t *)(s + 3);
+                *(nd_alias_u32_t *)(d + 0) = (x LS 8) | (y RS 24);
+                x = *(const nd_alias_u32_t *)(s + 7);
+                *(nd_alias_u32_t *)(d + 4) = (y LS 8) | (x RS 24);
+                y = *(const nd_alias_u32_t *)(s + 11);
+                *(nd_alias_u32_t *)(d + 8) = (x LS 8) | (y RS 24);
+                x = *(const nd_alias_u32_t *)(s + 15);
+                *(nd_alias_u32_t *)(d + 12) = (y LS 8) | (x RS 24);
+            }
+            break;
+        }
+
+    if (n & 16) {
+        *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+        *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+        *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+        *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+    }
+    if (n & 8) {
+        *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+        *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+    }
+    if (n & 4) {
+        *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+    }
+    if (n & 2) {
+        *d++ = *s++; *d++ = *s++;
+    }
+    if (n & 1) {
+        *d = *s;
+    }
     return dest;
 }
 

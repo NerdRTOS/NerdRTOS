@@ -7,6 +7,7 @@ typedef signed   int                    nd_int32_t;
 typedef unsigned char                   nd_uint8_t;
 typedef unsigned short                  nd_uint16_t;
 typedef unsigned int                    nd_uint32_t;
+typedef __UINTPTR_TYPE__                nd_uintptr_t;
 
 #ifndef ARCH_CPU_64BIT
 typedef long long                       nd_int64_t;
