@@ -1,6 +1,10 @@
+#include "nd_def.h"
 #include "nerd.h"
 #include "nd_lock.h"
 #include "nd_klibc.h"
+
+#define ND_MEMHEAP_ALIGNMENT    8U
+#define ND_MEMHEAP_HEADER_SIZE  ND_ALIGN(sizeof(nd_memheap_item_t), ND_MEMHEAP_ALIGNMENT)
 
 static inline nd_memheap_item_t *item_next(nd_memheap_item_t *item)
 {
@@ -101,9 +105,15 @@ static void memheap_coalesce(nd_memheap_t *heap, nd_memheap_item_t *item)
 
 static void *_memheap_alloc(nd_memheap_t *heap, nd_uint32_t size)
 {
+    if (size == 0 || size > (nd_size_t) - 1 - (ND_MEMHEAP_ALIGNMENT - 1U)) {
+        return ND_NULL;
+    }
+
     nd_uint32_t block_size = 0;
 
     nd_memheap_item_t *item = heap->start_item.next_free;
+
+    size = ND_ALIGN(size, ND_MEMHEAP_ALIGNMENT);
 
     while (item != &heap->start_item) {
         block_size = item_data_size(item);
