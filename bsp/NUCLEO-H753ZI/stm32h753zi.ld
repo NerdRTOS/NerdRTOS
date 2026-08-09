@@ -1,17 +1,19 @@
-/* Linker script for STM32H753ZI: 2MB FLASH, 128KB DTCM RAM
-   (AXI SRAM / SRAM1-4 unused for bring-up; note DMA cannot reach DTCM) */
+/* STM32H753ZI memory used by this image:
+   - DTCM: CPU-local data, kernel heap and stacks
+   - D2 SRAM3: non-cacheable Ethernet DMA descriptors and frame buffers */
 
 ENTRY(Reset_Handler)
 
-_estack = 0x20020000;    /* end of DTCM RAM */
+_estack = 0x20020000;    /* ORIGIN(DTCM) + LENGTH(DTCM) */
 
 _Min_Heap_Size  = 0x4000;    /* 16K kernel heap */
 _Min_Stack_Size = 0x1000;    /* 4K MSP stack (interrupts + pre-scheduler) */
 
 MEMORY
 {
-FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 2048K
-RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
+FLASH     (rx)  : ORIGIN = 0x08000000, LENGTH = 2048K
+DTCM      (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
+SRAM3_ETH (rw)  : ORIGIN = 0x30040000, LENGTH = 32K
 }
 
 SECTIONS
@@ -92,7 +94,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;
-  } >RAM AT> FLASH
+  } >DTCM AT> FLASH
 
   . = ALIGN(4);
   .bss :
@@ -106,7 +108,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;
     __bss_end__ = _ebss;
-  } >RAM
+  } >DTCM
 
   ._user_heap_stack :
   {
@@ -118,7 +120,28 @@ SECTIONS
     PROVIDE (__heap_end = .);
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
-  } >RAM
+  } >DTCM
+
+  /*
+   * Objects tagged with __attribute__((section(".eth_dma"))) are placed in
+   * D2 SRAM3, which is reachable by the Ethernet DMA.  NOLOAD reserves RAM
+   * without storing zero-filled buffers in the firmware image; ETH startup
+   * code must initialize descriptor/control memory explicitly.
+   */
+  .eth_dma (NOLOAD) :
+  {
+    . = ALIGN(32);
+    __eth_dma_start__ = .;
+
+    KEEP(*(.eth_dma))
+    KEEP(*(.eth_dma.*))
+
+    . = ALIGN(32);
+    __eth_dma_end__ = .;
+  } >SRAM3_ETH
+
+  ASSERT((__eth_dma_end__ - __eth_dma_start__) <= LENGTH(SRAM3_ETH),
+         "Ethernet DMA objects exceed D2 SRAM3")
 
   /DISCARD/ :
   {

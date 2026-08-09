@@ -5,6 +5,8 @@ import os
 import re
 import sys
 
+from ci_paths import is_third_party_path
+
 SCAN_EXT = (".c", ".h")
 
 EXCLUDE_DIR_PARTS = ("build", "pico-sdk", ".git")
@@ -40,15 +42,21 @@ def strip_strings_and_comments(line):
     return line
 
 
-def is_excluded_dir(name):
+def is_excluded_dir(path):
+    name = os.path.basename(path)
     if name in EXCLUDE_DIR_PARTS:
         return True
-    return any(name.startswith(p) for p in EXCLUDE_DIR_PREFIXES)
+    if any(name.startswith(p) for p in EXCLUDE_DIR_PREFIXES):
+        return True
+    return is_third_party_path(path)
 
 
 def iter_files(root):
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if not is_excluded_dir(d)]
+        dirnames[:] = [
+            d for d in dirnames
+            if not is_excluded_dir(os.path.join(dirpath, d))
+        ]
         for fn in filenames:
             if not fn.endswith(SCAN_EXT):
                 continue

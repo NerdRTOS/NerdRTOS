@@ -1,10 +1,14 @@
-#include "nd_shell.h"
 #include "app.h"
 
-#define SHELL_STACK_SIZE    1024
+#include "nerd.h"
+#include "nd_shell.h"
+#include "nd_thread.h"
+#include "network.h"
 
-static nd_uint8_t   shell_stack[SHELL_STACK_SIZE];
-static nd_thread_t  shell;
+#define SHELL_STACK_SIZE    1024U
+
+static nd_uint8_t  shell_stack[SHELL_STACK_SIZE];
+static nd_thread_t shell;
 
 void nd_app_init(void)
 {
@@ -12,4 +16,8 @@ void nd_app_init(void)
 
     nd_thread_create(&shell, "shell", nd_shell_task_entry,
                      30, ND_NULL, shell_stack, sizeof(shell_stack), ND_THREAD_OPT_NONE, 0);
+
+    if (network_init() != ND_EOK) {
+        shell_printf("[lwip] network thread creation failed\r\n");
+    }
 }

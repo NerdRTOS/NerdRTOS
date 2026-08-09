@@ -4,6 +4,8 @@
 import re
 import sys
 
+from ci_paths import is_third_party_path
+
 WARNING_RE = re.compile(
     r"^(.+?):(\d+):(\d+): warning: (.+?) \[(-W.+?)\]$"
 )
@@ -14,11 +16,15 @@ def main():
         sys.exit(1)
 
     warnings = []
+    ignored_warnings = 0
 
     with open(sys.argv[1], "r") as f:
         for line in f:
             m = WARNING_RE.match(line.strip())
             if m:
+                if is_third_party_path(m.group(1)):
+                    ignored_warnings += 1
+                    continue
                 warnings.append({
                     "file": m.group(1),
                     "line": m.group(2),
@@ -27,7 +33,9 @@ def main():
                 })
 
     if not warnings:
-        print("Build clean: no warnings found.")
+        print("Build clean: no project warnings found.")
+        if ignored_warnings:
+            print(f"Ignored {ignored_warnings} third-party warning(s).")
         sys.exit(0)
 
     by_flag = {}
