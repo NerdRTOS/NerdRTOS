@@ -1,0 +1,38 @@
+set(NERDRTOS_LWIP_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/init.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/def.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/inet_chksum.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/ip.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/mem.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/memp.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/netif.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/pbuf.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/stats.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/sys.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/tcp.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/tcp_in.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/tcp_out.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/timeouts.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/udp.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/ipv4/acd.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/ipv4/dhcp.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/ipv4/etharp.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/ipv4/icmp.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/ipv4/ip4.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/ipv4/ip4_addr.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/core/ipv4/ip4_frag.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/api/api_lib.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/api/api_msg.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/api/err.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/api/if_api.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/api/netbuf.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/api/sockets.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/api/tcpip.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/netif/ethernet.c
+    ${CMAKE_CURRENT_LIST_DIR}/port/nerdrtos/sys_arch.c
+)
+
+set(NERDRTOS_LWIP_INCLUDE_DIRS
+    ${CMAKE_CURRENT_LIST_DIR}/port/nerdrtos/include
+    ${CMAKE_CURRENT_LIST_DIR}/src/include
+)

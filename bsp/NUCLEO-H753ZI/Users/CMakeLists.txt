@@ -12,6 +12,11 @@ file(GLOB_RECURSE NERD_KERNEL_SOURCE ${NERD_KERNEL_SOURCE_PATH}/*.c)
 set(COMPONENTS_PATH ${CMAKE_SOURCE_DIR}/../../components)
 file(GLOB_RECURSE COMPONENTS_SOURCE ${COMPONENTS_PATH}/*.c)
 
+list(FILTER COMPONENTS_SOURCE EXCLUDE REGEX "/lwip/")
+
+set(LWIP_DIR ${COMPONENTS_PATH}/lwip)
+include(${LWIP_DIR}/lwip.cmake)
+
 set(LIB_PATH ${CMAKE_SOURCE_DIR}/../../lib)
 file(GLOB_RECURSE LIB_SOURCE ${LIB_PATH}/*.c)
 
@@ -29,6 +34,7 @@ add_executable(Firmware
     ${ARCH}
     ${NERD_KERNEL_SOURCE}
     ${COMPONENTS_SOURCE}
+    ${NERDRTOS_LWIP_SOURCES}
     ${LIB_SOURCE}
 )
 
@@ -39,8 +45,11 @@ target_link_libraries(Firmware
 target_include_directories(Firmware PRIVATE
     ${COMPONENTS_PATH}/ntest/include
     ${COMPONENTS_PATH}/shell/include
+    ${NERDRTOS_LWIP_INCLUDE_DIRS}
     ${NERD_KERNEL_HEAD_PATH}
     ${NERD_KERNEL_HEAD_PATH}/lib
+    # ST stm32-lan8742 component, version v1.0.4.
+    ${BSP_PATH}/Components/lan8742
     ${CMAKE_SOURCE_DIR}/Users
 )
 foreach(dir IN LISTS BSP_SUBDIRS)

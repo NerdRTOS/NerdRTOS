@@ -1,10 +1,11 @@
 #ifndef STM32H7xx_HAL_CONF_H
 #define STM32H7xx_HAL_CONF_H
 
-/* Enabled HAL modules - minimal set for UART bring-up */
+/* Enabled HAL modules used by this board port. */
 #define HAL_MODULE_ENABLED
 #define HAL_CORTEX_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
+#define HAL_ETH_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED
@@ -27,6 +28,11 @@
 #define USE_RTOS                         0
 #define USE_FLASH_ECC                    0U
 #define USE_HAL_UART_REGISTER_CALLBACKS  0U
+#define USE_HAL_ETH_REGISTER_CALLBACKS   0U
+
+/* Ethernet descriptor ring lengths used by eth.c. */
+#define ETH_TX_DESC_CNT                  4U
+#define ETH_RX_DESC_CNT                  8U
 
 /* Module headers */
 #ifdef HAL_RCC_MODULE_ENABLED
@@ -37,6 +43,9 @@
 #endif
 #ifdef HAL_DMA_MODULE_ENABLED
 #include "stm32h7xx_hal_dma.h"
+#endif
+#ifdef HAL_ETH_MODULE_ENABLED
+#include "stm32h7xx_hal_eth.h"
 #endif
 #ifdef HAL_CORTEX_MODULE_ENABLED
 #include "stm32h7xx_hal_cortex.h"

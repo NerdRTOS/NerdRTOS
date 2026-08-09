@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "app.h"
+#include "bsp_memory.h"
 #include "usart.h"
 
 void _init(void)
@@ -11,24 +12,6 @@ void _init(void)
 
 extern char __heap_start[];
 extern char __heap_end[];
-
-static void bsp_init(void);
-
-int main(void)
-{
-    nd_hw_irq_disable();
-
-    HAL_Init();
-    bsp_init();
-
-    usart_puts("Hello Nerd RTOS!\r\n");
-
-    nd_scheduler_init();
-    nd_app_init();
-    nd_scheduler_start();
-
-    return 0;
-}
 
 static void bsp_init(void)
 {
@@ -44,4 +27,19 @@ static void bsp_init(void)
 
     nd_system_heap_init(__heap_start,
                         (nd_uint32_t)(__heap_end - __heap_start));
+}
+
+int main(void)
+{
+    bsp_memory_init();
+    HAL_Init();
+    bsp_init();
+
+    usart_puts("Hello Nerd RTOS!\r\n");
+
+    nd_scheduler_init();
+    nd_app_init();
+    nd_scheduler_start();
+
+    return 0;
 }
