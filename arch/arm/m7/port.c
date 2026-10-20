@@ -58,14 +58,14 @@ void *nd_hw_stack_init(void       *entk_fun,
     return (void *)stack_frame;
 }
 
-void HardFault_Handler(void)
+__attribute__((naked)) void HardFault_Handler(void)
 {
-    isr_hardfault();
+    __asm volatile ("b isr_hardfault");
 }
 
-void PendSV_Handler(void)
+__attribute__((naked)) void PendSV_Handler(void)
 {
-    isr_pendsv();
+    __asm volatile ("b isr_pendsv");
 }
 
 void SysTick_Handler(void)
