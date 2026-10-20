@@ -9,4 +9,6 @@ bsp/NUCLEO-H753ZI/Drivers/CMSIS/
 bsp/NUCLEO-H753ZI/Drivers/STM32H7xx_HAL_Driver/
 bsp/NUCLEO-H753ZI/Outputs/
 CLAUDE.md
+bsp/NUCLEO-H755ZI-Q/Drivers/CMSIS/
+bsp/NUCLEO-H755ZI-Q/Drivers/STM32H7xx_HAL_Driver/
 .gitignore
