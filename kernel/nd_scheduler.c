@@ -14,23 +14,10 @@ nd_list_t k_thread_ready_list[ND_THREAD_PRIORITY_MAX];
 static nd_thread_t k_idle_thread;
 ALIGN(8) static nd_uint8_t k_idle_stack[ND_IDLE_STACK_SIZE];
 
-nd_uint64_t last_switch_time;
-
 static void nd_idle_entry(void *param)
 {
     (void)param;
     while (1);
-}
-
-nd_uint64_t nd_idle_runtime_get(void)
-{
-    nd_uint64_t idle_runtime = k_idle_thread.usage.total;
-
-    if (nd_current_thread == &k_idle_thread) {
-        idle_runtime += nd_hw_get_current() - last_switch_time;
-    }
-
-    return idle_runtime;
 }
 
 void nd_scheduler_init(void)
@@ -194,12 +181,6 @@ void nd_context_switch_cb(nd_thread_t *next)
     nd_thread_t *prev = nd_current_thread;
 
     nd_uint64_t now = nd_hw_get_current();
-
-    if (prev) {
-        prev->usage.total += now - last_switch_time;
-    }
-
-    last_switch_time = now;
 
     if (next == ND_NULL)
         return;

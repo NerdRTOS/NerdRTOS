@@ -41,7 +41,6 @@ add_executable(nerd
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_mempool.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_memheap.c
     ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_mem.c
-    ${CMAKE_CURRENT_LIST_DIR}/../../kernel/nd_cpuload.c
     ${CMAKE_CURRENT_LIST_DIR}/../../lib/rbtree.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/src/nd_shell.c
     ${CMAKE_CURRENT_LIST_DIR}/../../components/shell/commands/nd_cmd_system.c
