@@ -261,7 +261,6 @@ static nd_err_t nd_thread_init(nd_thread_t     *thread,
     thread->stat = ND_THREAD_STAT_INIT;
     thread->mutex.pending = ND_NULL;
 
-    nd_memset(&thread->usage, 0, sizeof(thread->usage));
     nd_memset(&thread->event, 0, sizeof(thread->event));
 
     nd_list_init(&thread->qnode);

@@ -26,11 +26,8 @@ void nd_try_schedule_irqsave(void);
 void nd_try_schedule(void);
 
 nd_uint64_t nd_hw_get_current(void);
-nd_uint64_t nd_idle_runtime_get(void);
 
 void nd_context_switch_cb(struct nd_thread *next);
 void nd_schedule_irq_exit(void);
-
-extern nd_uint64_t last_switch_time;
 
 #endif /* __ND_INTERNAL_H__ */

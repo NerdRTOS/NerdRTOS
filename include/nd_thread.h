@@ -42,12 +42,6 @@ typedef enum {
     ND_THREAD_OPT_ESSENTIAL = (1u << 0),
 } nd_thread_option_t;
 
-typedef struct {
-    nd_uint64_t total;
-    nd_uint64_t last_total;
-    nd_uint32_t load;
-} nd_thread_usage_t;
-
 typedef struct nd_thread {
     void          *sp;
     void          *entry;
@@ -72,7 +66,6 @@ typedef struct nd_thread {
     nd_thread_slice_t       slice;
     nd_thread_mutex_ctx_t   mutex;
     nd_thread_event_ctx_t   event;
-    nd_thread_usage_t       usage;
 
     char          name[ND_NAME_MAX_SIZE];
 } nd_thread_t;
